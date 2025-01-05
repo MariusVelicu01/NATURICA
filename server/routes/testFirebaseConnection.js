@@ -1,11 +1,14 @@
 const express = require('express');
-const { db } = require('../db_config/dbConfig');
 const router = express.Router();
 const {
   addDocument, getAllDocuments, getDocumentById, updateDocument, deleteDocument
 } = require('../services/firestoreService');
+const verifyToken = require('../middleware/verifyTokenMiddleware');
+const checkRole = require('../middleware/roleCheckerMiddleware');
 
-router.get('/test-firestore', async (req, res) => {
+router.use(verifyToken);
+
+router.get('/test-firestore', checkRole('client'), async (req, res) => {
   try {
     const data = await getAllDocuments('test')
     res.status(200).json(data);
@@ -14,7 +17,7 @@ router.get('/test-firestore', async (req, res) => {
   }
 });
 
-router.get('/test-firestore/:id', async (req, res) => {
+router.get('/test-firestore/:id', checkRole('client'), async (req, res) => {
   try {
     const {id} = req.params;
     const data = await getDocumentById('test',id);
@@ -24,7 +27,7 @@ router.get('/test-firestore/:id', async (req, res) => {
   }
 });
 
-router.post('/test-firestore', async (req, res) => {
+router.post('/test-firestore', checkRole('admin'), async (req, res) => {
   try {
     const { name } = req.body;
     const docRef = await addDocument('test',{ name, createdAt: new Date() });
@@ -34,7 +37,7 @@ router.post('/test-firestore', async (req, res) => {
   }
 });
 
-router.put('/test-firestore/:id', async (req, res) => {
+router.put('/test-firestore/:id', checkRole('admin'), async (req, res) => {
   try {
     const { id } = req.params;
     const data = req.body;
@@ -47,7 +50,7 @@ router.put('/test-firestore/:id', async (req, res) => {
   }
 });
 
-router.delete('/test-firestore/:id', async (req, res) => {
+router.delete('/test-firestore/:id', checkRole('admin'), async (req, res) => {
   try {
     const {id} = req.params;
     const result = await deleteDocument('test',id);

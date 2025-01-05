@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && request.auth.token.email.matches('.*@admin\\.com$');
+    }
+
+    function isClient() {
+      return isAuthenticated() && request.auth.token.email.matches('.*@client\\.com$');
+    }
+
+    match /test/{document=**} {
+      allow read, write: if isAdmin();
+      allow read: if isClient();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
