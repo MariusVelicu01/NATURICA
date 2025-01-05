@@ -13,6 +13,16 @@ service cloud.firestore {
     function isClient() {
       return isAuthenticated() && request.auth.token.email.matches('.*@client\\.com$');
     }
+    
+     match /symptoms/{document=**} {
+      allow read, write: if isAdmin();
+      allow read: if isClient();
+    }
+    
+    match /conditions/{document=**} {
+      allow read, write: if isAdmin();
+      allow read: if isClient();
+    }
 
     match /test/{document=**} {
       allow read, write: if isAdmin();
