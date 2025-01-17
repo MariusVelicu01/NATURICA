@@ -56,37 +56,43 @@ export default {
   },
   methods: {
     ...mapMutations(['signup']),
-    handleSignup() {
+        async handleSignup() {
       if (!this.selectedRole) {
         alert('Please select a role');
         return;
-      } else if (this.password !== this.confirmPassword) {
+      } else {
+        console.log(this.selectedRole)
+      }
+      if (this.password !== this.confirmPassword) {
         alert('Passwords do not match');
         return;
       }
 
-      if (!this.firstName || !this.lastName || !this.dateOfBirth) {
-        alert('Please complete all required fields');
-        return;
-      }
+      try {
+        const response = await fetch('http://localhost:3000/users/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password,
+            firstName: this.firstName,
+            lastName: this.lastName,
+            dateOfBirth: this.dateOfBirth,
+            role: this.selectedRole,
+          }),
+        });
 
-      const userData = {
-        firstName: this.firstName,
-        lastName: this.lastName,
-        email: this.email,
-        password: this.password,
-        dateOfBirth: this.dateOfBirth,
-        role: this.selectedRole,
-      };
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to sign up');
+        }
 
-      console.log('User Data:', userData);
-
-      this.signup(userData);
-
-      if (this.selectedRole === 'client') {
-        this.$router.push('/client/home');
-      } else if (this.selectedRole === 'admin') {
-        this.$router.push('/admin/home');
+        alert('User signed up successfully!');
+        this.signup(this.selectedRole);
+        this.$router.push(`/${this.selectedRole}/home`);
+      } catch (err) {
+        console.error('Signup Error:', err.message);
+        alert('Error during signup: ' + err.message);
       }
     },
     navigateToLogin() {

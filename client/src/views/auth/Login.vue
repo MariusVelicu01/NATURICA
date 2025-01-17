@@ -3,9 +3,19 @@
     <h1>Login</h1>
     <form @submit.prevent="handleLogin">
       <label>Email:</label>
-      <input type="email" v-model="email" placeholder="Enter your email" required />
+      <input
+        type="email"
+        v-model="email"
+        placeholder="Enter your email"
+        required
+      />
       <label>Password:</label>
-      <input type="password" v-model="password" placeholder="Enter your password" required />
+      <input
+        type="password"
+        v-model="password"
+        placeholder="Enter your password"
+        required
+      />
 
       <div>
         <label>
@@ -28,38 +38,54 @@
 </template>
 
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations } from "vuex";
 
 export default {
-  name: 'LoginPage',
+  name: "LoginPage",
   data() {
     return {
-      email: '',
-      password: '',
-      selectedRole: '',
+      email: "",
+      password: "",
+      selectedRole: "",
     };
   },
   methods: {
-    ...mapMutations(['login']),
+    ...mapMutations(["login"]),
     handleLogin() {
       if (!this.selectedRole) {
-        alert('Please select a role');
+        alert("Please select a role");
         return;
       }
 
-      this.login(this.selectedRole);
-
-      if (this.selectedRole === 'client') {
-        this.$router.push('/client/home');
-      } else if (this.selectedRole === 'admin') {
-        this.$router.push('/admin/home');
-      }
+      fetch("http://localhost:3000/users/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: this.email,
+          password: this.password,
+          selectedRole: this.selectedRole,
+        }),
+      })
+        .then(async (response) => {
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || "Failed to login");
+          }
+          const data = await response.json();
+          localStorage.setItem("token", data.token);
+          this.login(this.selectedRole);
+          this.$router.push(`/${this.selectedRole}/home`);
+        })
+        .catch((err) => {
+          console.error("Login Error:", err.message);
+          alert("Error during login: " + err.message);
+        });
     },
     navigateToSignup() {
-      this.$router.push('/signup');
+      this.$router.push("/signup");
     },
     navigateToForgotPassword() {
-      this.$router.push('/forgot-password');
+      this.$router.push("/forgot-password");
     },
   },
 };
