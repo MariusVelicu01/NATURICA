@@ -1,12 +1,14 @@
 <template>
   <div>
-    <h1>Welcome, Admin!</h1>
+    <h1>Manage Orders</h1>
+
+    <h2>Orders List</h2>
+
   </div>
 </template>
 
 <script>
-
 export default {
-  name: 'HomeAdmin',
+  name: "OrdersAdmin",
 };
 </script>
