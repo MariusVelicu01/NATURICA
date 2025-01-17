@@ -39,6 +39,13 @@ const validateSymptomOnUpdate = async (req, res, next) => {
       return res.status(400).json({ error: 'Cannot update a symptom that is linked to a condition.' });
     }
 
+    const symptoms = await getAllDocuments('symptoms');
+    const alreadyExists = symptoms.some(symptom => symptom.name === name);
+
+    if (alreadyExists) {
+      return res.status(400).json({ error: 'A symptom with this name already exists.' });
+    }
+
     next();
   } catch (err) {
     console.error('Validation Error on Update:', err.message);

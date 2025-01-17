@@ -9,6 +9,11 @@ const {
 } = require('../services/firestoreService');
 const verifyToken = require('../middleware/verifyTokenMiddleware');
 const checkRole = require('../middleware/roleCheckerMiddleware');
+const {
+  validateConditionOnDelete,
+  validateConditionOnUpdate,
+  validateConditionOnCreate
+} = require('../middleware/validateConditionsMiddleware');
 
 router.use(verifyToken);
 
@@ -38,7 +43,7 @@ router.get('/:id', checkRole('client'), async (req, res) => {
   }
 });
 
-router.post('/', checkRole('admin'), async (req, res) => {
+router.post('/', checkRole('admin'), validateConditionOnCreate, async (req, res) => {
   try {
     const { name, symptoms } = req.body;
 
@@ -58,7 +63,7 @@ router.post('/', checkRole('admin'), async (req, res) => {
   }
 });
 
-router.put('/:id', checkRole('admin'), async (req, res) => {
+router.put('/:id', checkRole('admin'), validateConditionOnUpdate, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, symptoms } = req.body;
@@ -79,7 +84,7 @@ router.put('/:id', checkRole('admin'), async (req, res) => {
   }
 });
 
-router.delete('/:id', checkRole('admin'), async (req, res) => {
+router.delete('/:id', checkRole('admin'), validateConditionOnDelete, async (req, res) => {
   try {
     const { id } = req.params;
 

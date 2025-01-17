@@ -5,19 +5,21 @@ const app = express()
 const httpLogger = require('morgan')
 const cors = require('cors')
 
-const testDbCOnnection = require('./routes/testFirebaseConnection');
 const usersRouter = require('./routes/users');
 const symptomsRouter = require('./routes/symptoms')
 const conditionsRouter = require('./routes/conditions')
+const productsRouter = require('./routes/products')
+const orderRouter = require('./routes/orders')
 
 app.use(httpLogger('dev'))
 app.use(cors())
 app.use(express.json());
 
 app.use('/users', usersRouter);
-app.use('/test',testDbCOnnection)
 app.use('/symptoms',symptomsRouter);
 app.use('/conditions',conditionsRouter);
+app.use('/products',productsRouter);
+app.use('/orders',orderRouter);
 
 app.listen(port, () => {
     console.log(`Server running on http://localhost:${port}`);
