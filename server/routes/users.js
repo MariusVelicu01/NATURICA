@@ -77,6 +77,33 @@ router.post('/login', async (req, res) => {
   }
 });
 
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
+  try {
+    const response = await axios.post(
+      `https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        requestType: 'PASSWORD_RESET',
+        email: email,
+      }
+    );
+
+    if (response.status === 200) {
+      res.status(200).json({ message: 'Password reset email sent successfully' });
+    } else {
+      throw new Error('Failed to send password reset email');
+    }
+  } catch (err) {
+    console.error('Error sending password reset email:', err.message);
+    res.status(500).json({ error: 'Failed to send password reset email' });
+  }
+});
+
 router.get('/me', async (req, res) => {
   try {
     const userId = req.user.uid;
