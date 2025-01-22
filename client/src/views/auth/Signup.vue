@@ -82,13 +82,16 @@ export default {
           }),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
           const error = await response.json();
           throw new Error(error.error || 'Failed to sign up');
         }
 
         alert('User signed up successfully!');
-        this.signup(this.selectedRole);
+        
+        this.signup({ role: this.selectedRole, token: data.token });
         this.$router.push(`/${this.selectedRole}/home`);
       } catch (err) {
         console.error('Signup Error:', err.message);

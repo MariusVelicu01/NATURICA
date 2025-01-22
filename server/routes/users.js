@@ -31,7 +31,23 @@ router.post('/signup', async (req, res) => {
 
     await db.collection('users').doc(uid).set(userDoc);
 
-    res.status(201).json({ message: 'User created successfully', uid });
+    const response = await axios.post(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        email,
+        password,
+        returnSecureToken: true,
+      }
+    );
+
+    const { idToken } = response.data; 
+
+    res.status(201).json({
+      message: 'User created successfully',
+      uid,
+      token: idToken,
+    });
+    
   } catch (err) {
     console.error('Error creating user:', err.message);
     res.status(500).json({ error: err.message || 'Failed to create user' });

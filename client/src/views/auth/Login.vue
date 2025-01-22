@@ -67,13 +67,14 @@ export default {
         }),
       })
         .then(async (response) => {
+          const data = await response.json();
+          
           if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || "Failed to login");
           }
-          const data = await response.json();
-          localStorage.setItem("token", data.token);
-          this.login(this.selectedRole);
+          
+          this.login({ role: this.selectedRole, token: data.token });
           this.$router.push(`/${this.selectedRole}/home`);
         })
         .catch((err) => {
