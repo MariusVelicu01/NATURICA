@@ -40,7 +40,7 @@ const validateSymptomOnUpdate = async (req, res, next) => {
     }
 
     const symptoms = await getAllDocuments('symptoms');
-    const alreadyExists = symptoms.some(symptom => symptom.name === name);
+    const alreadyExists = symptoms.some(symptom => symptom.name.toLowerCase().trim() === name.toLowerCase().trim());
 
     if (alreadyExists) {
       return res.status(400).json({ error: 'A symptom with this name already exists.' });
@@ -62,7 +62,7 @@ const validateSymptomOnCreate = async (req, res, next) => {
     }
 
     const symptoms = await getAllDocuments('symptoms');
-    const alreadyExists = symptoms.some(symptom => symptom.name === name);
+    const alreadyExists = symptoms.some(symptom => symptom.name.toLowerCase().trim() === name.toLowerCase().trim());
 
     if (alreadyExists) {
       return res.status(400).json({ error: 'A symptom with this name already exists.' });

@@ -17,8 +17,17 @@ const COLLECTION_NAME = 'symptoms';
 
 router.get('/', checkRole('client'), async (req, res) => {
   try {
-    const data = await getAllDocuments(COLLECTION_NAME)
-    res.status(200).json(data);
+    const symptoms = await getAllDocuments(COLLECTION_NAME);
+    const conditions = await getAllDocuments('conditions');
+
+    const symptomsWithUsage = symptoms.map((symptom) => {
+      const isUsed = conditions.some((condition) =>
+        condition.symptoms?.includes(symptom.id)
+      );
+      return { ...symptom, isUsed: isUsed };
+    });
+
+    res.status(200).json(symptomsWithUsage);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
