@@ -1,4 +1,4 @@
-const { getAllDocuments } = require('../services/firestoreService');
+const { getAllDocuments, getDocumentById } = require('../services/firestoreService');
 
 const validateSymptomOnDelete = async (req, res, next) => {
   try {
@@ -30,20 +30,22 @@ const validateSymptomOnUpdate = async (req, res, next) => {
     }
 
     const conditions = await getAllDocuments('conditions');
+
+    const existingSymptom = await getDocumentById('symptoms', id);
+    if (!existingSymptom) {
+      return res.status(404).json({ error: 'Symptom not found.' });
+    }
     
     const isUsedInCondition = conditions.some(condition => 
       condition.symptoms && condition.symptoms.includes(id)
     );
 
     if (isUsedInCondition) {
-      return res.status(400).json({ error: 'Cannot update a symptom that is linked to a condition.' });
-    }
-
-    const symptoms = await getAllDocuments('symptoms');
-    const alreadyExists = symptoms.some(symptom => symptom.name.toLowerCase().trim() === name.toLowerCase().trim());
-
-    if (alreadyExists) {
-      return res.status(400).json({ error: 'A symptom with this name already exists.' });
+      if (existingSymptom.name.toLowerCase().trim() !== name.toLowerCase().trim()) {
+        return res
+          .status(400)
+          .json({ error: 'Cannot update the name of a symptom linked to a condition.' });
+      }
     }
 
     next();

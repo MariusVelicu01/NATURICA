@@ -13,15 +13,11 @@
         <span v-if="symptom.isUsed" class="hint"> - Linked to a condition</span>
         <button 
           @click="editSymptom(symptom)" 
-          :disabled="symptom.isUsed"
-          :class="{ disabled: symptom.isUsed }"
         >
           Edit
         </button>
         <button 
           @click="deleteSymptom(symptom.id)" 
-          :disabled="symptom.isUsed"
-          :class="{ disabled: symptom.isUsed }"
         >
           Delete
         </button>
@@ -97,10 +93,6 @@ export default {
 </script>
 
 <style>
-.disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 .hint {
   color: gray;
   font-style: italic;
