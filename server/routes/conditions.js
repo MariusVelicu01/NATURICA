@@ -21,11 +21,22 @@ const COLLECTION_NAME = 'conditions';
 
 router.get('/', checkRole('client'), async (req, res) => {
   try {
-    const data = await getAllDocuments(COLLECTION_NAME);
-    res.status(200).json(data);
+    const conditions = await getAllDocuments(COLLECTION_NAME);
+    const products = await getAllDocuments('products');
+
+    const conditionsWithUsage = conditions.map((condition) => {
+      const isUsed = products.some(
+        (product) =>
+          Array.isArray(product.conditionsTreated) &&
+          product.conditionsTreated.includes(condition.id)
+      );
+      return { ...condition, isUsed };
+    });
+
+    res.status(200).json(conditionsWithUsage);
   } catch (err) {
     console.error('Error fetching conditions:', err.message);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Failed to fetch conditions.' });
   }
 });
 

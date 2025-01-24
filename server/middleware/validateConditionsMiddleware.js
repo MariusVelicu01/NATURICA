@@ -1,4 +1,4 @@
-const { getAllDocuments } = require('../services/firestoreService');
+const { getAllDocuments, getDocumentById } = require('../services/firestoreService');
 
 const validateConditionOnDelete = async (req, res, next) => {
   try {
@@ -23,33 +23,34 @@ const validateConditionOnDelete = async (req, res, next) => {
 const validateConditionOnUpdate = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name , symptoms} = req.body;
+    const { name, symptoms } = req.body;
 
-    if (!name || !symptoms || Array.isArray(symptoms)) {
+    if (!name || !symptoms || !Array.isArray(symptoms)) {
       return res.status(400).json({ error: 'Name and symptoms are required for updating.' });
     }
 
     const products = await getAllDocuments('products');
-    
-    const isUsedInProducts = products.some(product => 
-        product.conditionsTreated && product.conditionsTreated.includes(id)
-      );
-  
-      if (isUsedInProducts) {
-        return res.status(400).json({ error: 'Cannot update a condition that is linked to a product.' });
-      }
+    const isUsedInProducts = products.some(product =>
+      product.conditionsTreated && product.conditionsTreated.includes(id)
+    );
 
-      const conditions = await getAllDocuments('conditions');
-      const alreadyExists = conditions.some(condition => condition.name === name);
-  
-      if (alreadyExists) {
-        return res.status(400).json({ error: 'A condition with this name already exists.' });
+    const existingCondition = await getDocumentById('conditions', id);
+    if (!existingCondition) {
+      return res.status(404).json({ error: 'Condition not found.' });
+    }
+
+    if (isUsedInProducts) {
+      if (existingCondition.name.toLowerCase().trim() !== name.toLowerCase().trim()) {
+        return res
+          .status(400)
+          .json({ error: 'Cannot update the name of a condition linked to a product.' });
       }
+    }
 
     next();
   } catch (err) {
     console.error('Validation Error on Update:', err.message);
-    res.status(500).json({ error: 'Failed to validate symptom before update.' });
+    res.status(500).json({ error: 'Failed to validate condition before update.' });
   }
 };
 
