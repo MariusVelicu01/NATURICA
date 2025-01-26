@@ -32,7 +32,6 @@ const productsModule = {
           commit('setProducts', data);
         } catch (error) {
           console.error('Fetch Products Error:', error.message);
-          throw error;
         }
       },
       async addProductAction({ commit }, payload) {
@@ -83,7 +82,6 @@ const productsModule = {
           commit('deleteProduct', id);
         } catch (error) {
           console.error('Delete Product Error:', error.message);
-          throw error;
         }
       },
     },
