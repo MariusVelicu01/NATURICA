@@ -29,7 +29,7 @@ const validateProductName = async (req, res, next) => {
     const alreadyExists = products.some(product => product.name.toLowerCase().trim() === name.toLowerCase().trim());
 
     if (alreadyExists) {
-      return res.status(400).json({ error: 'A condition with this name already exists.' });
+      return res.status(400).json({ error: 'A product with this name already exists.' });
     }
 
     next();
