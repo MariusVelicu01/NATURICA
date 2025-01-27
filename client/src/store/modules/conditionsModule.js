@@ -90,7 +90,7 @@ const conditionsModule = {
     
         selectedConditions.forEach((condition) => {
           const matchedCondition = getters.allConditions.find(
-            (cond) => cond.id === condition.value
+            (cond) => (cond.id === condition.value) || (cond.id === condition.id)
           );
           if (matchedCondition && matchedCondition.symptoms) {
             matchedCondition.symptoms.forEach((symptom) => {
@@ -98,7 +98,7 @@ const conditionsModule = {
             });
           }
         });
-    
+        
         return Array.from(symptomsSet).map((symptom) => JSON.parse(symptom));
       },
     },
