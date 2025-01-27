@@ -27,6 +27,14 @@
           label="label"
           track-by="value"
         />
+        <div v-if="symptomsTreated.length > 0">
+          <h3>Symptoms Treated:</h3>
+          <ul>
+            <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
+              {{ symptom.name }}
+            </li>
+          </ul>
+        </div>
         <input
           v-model="form.price"
           type="number"
@@ -87,7 +95,10 @@ export default {
   },
   computed: {
     ...mapGetters("products", ["allProducts"]),
-    ...mapGetters("conditions", ["allConditions"]),
+    ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
+    currentSymptomsTreated() {
+      return this.symptomsTreated(this.selectedConditions);
+    },
   },
   methods: {
     ...mapActions("products", [
@@ -117,9 +128,10 @@ export default {
       this.showForm = true;
       this.isEditing = true;
       this.form = { ...product };
-      this.selectedConditions = product.conditionsTreated.map((id) =>
-        this.conditionsOptions.find((condition) => condition.value === id)
-      );
+      this.selectedConditions = product.conditionsTreated.map((condition) => ({
+        value: condition.id,
+        label: condition.name,
+      }));
     },
 
     handleFileChange(event) {
@@ -127,14 +139,14 @@ export default {
     },
 
     extractFileName(url) {
-    if (!url) return "No file";
-    const segments = url.split("/");
-    return segments[segments.length - 1];
-  },
+      if (!url) return "No file";
+      const segments = url.split("/");
+      return segments[segments.length - 1];
+    },
 
     async submitForm() {
       try {
-        let imageUrl = this.form.imgSrc; 
+        let imageUrl = this.form.imgSrc;
 
         if (this.file) {
           const formData = new FormData();
@@ -156,7 +168,7 @@ export default {
           }
 
           const { url } = await uploadResponse.json();
-          imageUrl = url; 
+          imageUrl = url;
         }
 
         const payload = {
@@ -164,10 +176,11 @@ export default {
           productDetails: this.form.productDetails,
           price: this.form.price,
           stock: this.form.stock,
-          imgSrc: imageUrl, 
-          conditionsTreated: this.selectedConditions.map(
-            (condition) => condition.value
-          ),
+          imgSrc: imageUrl,
+          conditionsTreated: this.selectedConditions.map((condition) => ({
+            id: condition.value,
+            name: condition.label,
+          })),
         };
 
         if (this.isEditing) {
@@ -188,7 +201,7 @@ export default {
       }
     },
 
-    clearForm(){
+    clearForm() {
       this.form = {
         id: null,
         name: "",

@@ -47,9 +47,11 @@ router.post('/', checkRole('admin'), validateProductName, async (req, res) => {
     const productStatistics = 0;
 
     if (!name || !productDetails || !conditionsTreated || !Array.isArray(conditionsTreated) || !stock || !price || !imgSrc) {
-      return res.status(400).json({ error: 'Name, product details, conditions treated array, stock, price, image source are required' });
-    } else if(stock<=0 || price<=0){
-      return res.status(400).json({error: 'Value of stock or price needs to be greater that 0'})
+      return res.status(400).json({ error: 'All fields are required, including conditions treated.' });
+    } else if (conditionsTreated.length === 0) {
+      return res.status(400).json({ error: 'At least one condition must be selected.' });
+    } else if (stock <= 0 || price <= 0) {
+      return res.status(400).json({ error: 'Stock and price must be greater than 0.' });
     }
 
     const docRef = await addDocument(COLLECTION_NAME, {
@@ -75,9 +77,11 @@ router.put('/:id', checkRole('admin'), async (req, res) => {
     const { name, productDetails, conditionsTreated, stock, price, imgSrc } = req.body;
 
     if (!name || !productDetails || !conditionsTreated || !Array.isArray(conditionsTreated) || !stock || !price || !imgSrc) {
-      return res.status(400).json({ error: 'Name, product details, conditions treated array, stock, price, image source are required' });
-    } else if(stock<=0 || price<=0){
-      return res.status(400).json({error: 'Value of stock or price needs to be greater that 0'})
+      return res.status(400).json({ error: 'All fields are required, including conditions treated.' });
+    } else if (conditionsTreated.length === 0) {
+      return res.status(400).json({ error: 'At least one condition must be selected.' });
+    } else if (stock <= 0 || price <= 0) {
+      return res.status(400).json({ error: 'Stock and price must be greater than 0.' });
     }
 
     const productBeforeUpdate = await getDocumentById(COLLECTION_NAME, id);

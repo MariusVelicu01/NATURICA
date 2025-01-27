@@ -54,20 +54,20 @@ const conditionsModule = {
       async updateConditionAction({ commit }, { id, payload }) {
         try {
           const response = await fetch(`http://localhost:3000/conditions/${id}`, {
-            method: 'PUT',
+            method: "PUT",
             headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
             body: JSON.stringify(payload),
           });
-          if (!response.ok) throw new Error('Failed to update condition');
+          if (!response.ok) throw new Error("Failed to update condition");
           const updatedCondition = await response.json();
-          commit('updateCondition', updatedCondition);
+          commit("updateCondition", updatedCondition);
         } catch (error) {
-          console.error('Update Condition Error:', error.message);
+          console.error("Update Condition Error:", error.message);
         }
-      },
+      },      
       async deleteConditionAction({ commit }, id) {
         try {
           const response = await fetch(`http://localhost:3000/conditions/${id}`, {
@@ -85,6 +85,22 @@ const conditionsModule = {
     },
     getters: {
       allConditions: (state) => state.conditions,
+      symptomsTreated: (state, getters) => (selectedConditions) => {
+        const symptomsSet = new Set();
+    
+        selectedConditions.forEach((condition) => {
+          const matchedCondition = getters.allConditions.find(
+            (cond) => cond.id === condition.value
+          );
+          if (matchedCondition && matchedCondition.symptoms) {
+            matchedCondition.symptoms.forEach((symptom) => {
+              symptomsSet.add(JSON.stringify(symptom));
+            });
+          }
+        });
+    
+        return Array.from(symptomsSet).map((symptom) => JSON.parse(symptom));
+      },
     },
   };
   

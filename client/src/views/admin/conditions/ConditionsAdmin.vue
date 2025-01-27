@@ -8,21 +8,13 @@
       <li v-for="condition in allConditions" :key="condition.id">
         <span>{{ condition.name }}</span>
         <span v-if="condition.isUsed" class="hint"> - Linked to a product</span>
-        <button
-          @click="editCondition(condition)"
-        >
-          Update
-        </button>
-        <button
-          @click="deleteCondition(condition.id)"
-        >
-          Delete
-        </button>
+        <button @click="editCondition(condition)">Update</button>
+        <button @click="deleteCondition(condition.id)">Delete</button>
       </li>
     </ul>
 
     <div v-if="showForm">
-      <h2>{{ isEditing ? 'Update Condition' : 'Add Condition' }}</h2>
+      <h2>{{ isEditing ? "Update Condition" : "Add Condition" }}</h2>
       <form @submit.prevent="submitForm">
         <input
           v-model="form.name"
@@ -39,7 +31,7 @@
           label="label"
           track-by="value"
         />
-        <button type="submit">{{ isEditing ? 'Update' : 'Add' }}</button>
+        <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
         <button @click="cancelForm">Cancel</button>
       </form>
     </div>
@@ -54,19 +46,19 @@ export default {
   components: { Multiselect },
   data() {
     return {
-      showForm: false, 
-      isEditing: false, 
+      showForm: false,
+      isEditing: false,
       form: {
         id: null,
         name: "",
-        selectedSymptoms: [], 
+        selectedSymptoms: [],
       },
       symptomsOptions: [],
     };
   },
   computed: {
-    ...mapGetters("conditions", ["allConditions"]), 
-    ...mapGetters("symptoms", ["allSymptoms"]), 
+    ...mapGetters("conditions", ["allConditions"]),
+    ...mapGetters("symptoms", ["allSymptoms"]),
   },
   methods: {
     ...mapActions("conditions", [
@@ -96,9 +88,10 @@ export default {
       this.isEditing = true;
       this.form.id = condition.id;
       this.form.name = condition.name;
-      this.form.selectedSymptoms = condition.symptoms.map((symptomId) =>
-        this.symptomsOptions.find((symptom) => symptom.value === symptomId)
-      );
+      this.form.selectedSymptoms = condition.symptoms.map((symptom) => ({
+        value: symptom.id, 
+        label: symptom.name,
+      }));
       this.showForm = true;
     },
 
@@ -110,7 +103,10 @@ export default {
 
       const payload = {
         name: this.form.name,
-        symptoms: this.form.selectedSymptoms.map((symptom) => symptom.value),
+        symptoms: this.form.selectedSymptoms.map((symptom) => ({
+          id: symptom.value,
+          name: symptom.label,
+        })),
       };
 
       if (this.isEditing) {
@@ -125,7 +121,9 @@ export default {
     },
 
     async deleteCondition(id) {
-      const confirmed = confirm("Are you sure you want to delete this condition?");
+      const confirmed = confirm(
+        "Are you sure you want to delete this condition?"
+      );
       if (confirmed) {
         this.cancelForm();
         await this.deleteConditionAction(id);
