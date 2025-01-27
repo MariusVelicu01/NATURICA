@@ -34,7 +34,9 @@
     </div>
     <ul v-else>
       <li v-for="product in filteredProducts" :key="product.id">
-        <h2>{{ product.name }}</h2>
+        <router-link :to="`/client/products/${product.id}`">
+          <h2>{{ product.name }}</h2>
+        </router-link>
         <p>Price: ${{ product.price }}</p>
         <img
           v-if="product.imgSrc"

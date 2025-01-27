@@ -13,6 +13,8 @@ import ProductsAdmin from '../views/admin/products/ProductsAdmin.vue'
 import OrdersAdmin from '../views/admin/orders/OrdersAdmin.vue'
 import ProductsClient from '../views/client/products/ProductsClient.vue'
 import OrdersClient from '../views/client/orders/OrdersClient.vue'
+import ProductDetailsAdmin from '../views/admin/products/ProductDetailsAdmin.vue'
+import ProductDetailsClient from '../views/client/products/ProductDetailsClient.vue'
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
@@ -25,6 +27,7 @@ const routes = [
     children: [
       { path: 'home', name: 'HomeClient', component: HomeClient },
       { path: 'products', name: 'ProductsClient', component: ProductsClient },
+      { path: 'products/:id', name: 'ProductDetailsClient', component: ProductDetailsClient, props: true, },
       { path: 'orders', name: 'OrdersClient', component: OrdersClient },
     ],
   },
@@ -37,6 +40,7 @@ const routes = [
       { path: 'symptoms', name: 'SymptomsAdmin', component: SymptomsAdmin },
       { path: 'conditions', name: 'ConditionsAdmin', component: ConditionsAdmin },
       { path: 'products', name: 'ProductsAdmin', component: ProductsAdmin },
+      { path: 'products/:id', name: 'ProductDetailsAdmin', component: ProductDetailsAdmin, props: true, },
       { path: 'orders', name: 'OrdersAdmin', component: OrdersAdmin },
     ],
   },

@@ -2,9 +2,48 @@
   <div>
     <h1>Manage Products</h1>
     <button @click="openAddForm">Add Product</button>
-    <ul>
-      <li v-for="product in allProducts" :key="product.id">
-        <span>{{ product.name }}</span>
+    <div>
+      <label for="symptoms-select">Filter by Symptoms:</label>
+      <multiselect
+        id="symptoms-select"
+        v-model="selectedSymptomsFilter"
+        :options="symptomsOptions"
+        :multiple="true"
+        :searchable="true"
+        placeholder="Select symptoms"
+        label="label"
+        track-by="value"
+      />
+
+      <label for="conditions-select">Filter by Conditions:</label>
+      <multiselect
+        id="conditions-select"
+        v-model="selectedConditionsFilter"
+        :options="filteredConditionsOptions"
+        :multiple="true"
+        :searchable="true"
+        placeholder="Select conditions"
+        label="label"
+        track-by="value"
+      />
+    </div>
+
+    <div v-if="loading">Loading products...</div>
+    <div v-else-if="filteredProducts.length === 0">
+      No products match your criteria.
+    </div>
+    <ul v-else>
+      <li v-for="product in filteredProducts" :key="product.id">
+        <router-link :to="`/admin/products/${product.id}`">
+          <h2>{{ product.name }}</h2>
+        </router-link>
+        <p>Price: ${{ product.price }}</p>
+        <img
+          v-if="product.imgSrc"
+          :src="product.imgSrc"
+          alt="Product Image"
+          style="max-width: 200px; display: block; margin-bottom: 10px"
+        />
         <button @click="openEditForm(product)">Update</button>
         <button @click="deleteProduct(product.id)">Delete</button>
       </li>
@@ -91,14 +130,67 @@ export default {
       file: null,
       selectedConditions: [],
       conditionsOptions: [],
+      selectedSymptomsFilter: [],
+      selectedConditionsFilter: [],
     };
   },
   computed: {
     ...mapGetters("products", ["allProducts"]),
     ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
+    ...mapGetters("symptoms", ["allSymptoms"]),
     currentSymptomsTreated() {
       return this.symptomsTreated(this.selectedConditions);
     },
+
+    symptomsOptions() {
+      return this.allSymptoms.map((symptom) => ({
+        value: symptom.id,
+        label: symptom.name,
+      }));
+    },
+
+    filteredConditionsOptions() {
+      if (this.selectedSymptomsFilter.length === 0) {
+        return this.allConditions.map((condition) => ({
+          value: condition.id,
+          label: condition.name,
+        }));
+      }
+      return this.allConditions
+        .filter((condition) =>
+          condition.symptoms.some((symptom) =>
+            this.selectedSymptomsFilter.some(
+              (selectedSymptom) => selectedSymptom.value === symptom.id
+            )
+          )
+        )
+        .map((condition) => ({
+          value: condition.id,
+          label: condition.name,
+        }));
+    },
+
+    filteredProducts() {
+      const productsBySymptoms = this.filterBySymptoms();
+      const productsByConditions = this.filterByConditions();
+
+      if (
+        productsBySymptoms.length === 0 &&
+        productsByConditions.length === 0
+      ) {
+        return this.allProducts;
+      }
+      if (productsBySymptoms.length === 0) {
+        return productsByConditions;
+      }
+      if (productsByConditions.length === 0) {
+        return productsBySymptoms;
+      }
+      return productsBySymptoms.filter((product) =>
+        productsByConditions.includes(product)
+      );
+    },
+
   },
   methods: {
     ...mapActions("products", [
@@ -108,6 +200,7 @@ export default {
       "deleteProductAction",
     ]),
     ...mapActions("conditions", ["fetchConditionsAction"]),
+    ...mapActions("symptoms", ["fetchSymptomsAction"]),
 
     async fetchData() {
       await this.fetchConditionsAction();
@@ -116,6 +209,7 @@ export default {
         label: condition.name,
       }));
       await this.fetchProductsAction();
+      await this.fetchSymptomsAction();
     },
 
     openAddForm() {
@@ -229,6 +323,28 @@ export default {
         this.fetchData();
       }
     },
+
+    filterBySymptoms() {
+      return this.allProducts.filter((product) => {
+        const productSymptoms = this.symptomsTreated(product.conditionsTreated);
+        return this.selectedSymptomsFilter.some((selectedSymptom) =>
+          productSymptoms.some(
+            (symptom) => symptom.id === selectedSymptom.value
+          )
+        );
+      });
+    },
+
+    filterByConditions() {
+      return this.allProducts.filter((product) =>
+        this.selectedConditionsFilter.some((condition) =>
+          product.conditionsTreated.some(
+            (treatedCondition) => treatedCondition.id === condition.value
+          )
+        )
+      );
+    },
+
   },
   created() {
     this.fetchData();
