@@ -64,8 +64,7 @@ decreaseQuantity(item) {
     },
 
     checkout() {
-      alert("Thank you for your purchase!");
-      // Logica de checkout (de exemplu, apel la backend)
+      this.$router.push('checkout');
     },
   },
 };
