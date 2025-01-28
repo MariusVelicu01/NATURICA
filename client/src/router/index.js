@@ -15,6 +15,7 @@ import ProductsClient from '../views/client/products/ProductsClient.vue'
 import OrdersClient from '../views/client/orders/OrdersClient.vue'
 import ProductDetailsAdmin from '../views/admin/products/ProductDetailsAdmin.vue'
 import ProductDetailsClient from '../views/client/products/ProductDetailsClient.vue'
+import CartClient from '../views/client/orders/buy-flux/CartComponent.vue'
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
@@ -29,6 +30,7 @@ const routes = [
       { path: 'products', name: 'ProductsClient', component: ProductsClient },
       { path: 'products/:id', name: 'ProductDetailsClient', component: ProductDetailsClient, props: true, },
       { path: 'orders', name: 'OrdersClient', component: OrdersClient },
+      { path: 'cart', name: 'CartClient', component: CartClient },
     ],
   },
   {

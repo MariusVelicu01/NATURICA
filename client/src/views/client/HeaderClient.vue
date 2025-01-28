@@ -6,6 +6,7 @@
           <li><router-link to="/client/home">Home</router-link></li>
           <li><router-link to="/client/products">Products</router-link></li>
           <li><router-link to="/client/orders">Orders</router-link></li>
+          <li><router-link to="/client/cart">Cart ({{ cartCount }})</router-link></li>
           <li><button @click="handleLogout">Logout</button></li>
         </ul>
       </nav>
@@ -17,10 +18,13 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'HeaderClient',
+    computed: {
+    ...mapGetters("cart", ["cartCount"]),
+  },
   methods: {
     ...mapActions(['logout']),
     handleLogout() {

@@ -44,10 +44,19 @@
           alt="Product Image"
           style="max-width: 200px; display: block; margin-bottom: 10px"
         />
+        <div>
+          <button 
+            v-if="product.stock > 0" 
+            @click="addToCart(product)">
+            Add to Cart
+          </button>
+          <span v-else style="color: red; font-weight: bold;">OUT OF STOCK</span>
+        </div>
       </li>
     </ul>
   </div>
 </template>
+
 
 <script>
 import Multiselect from "vue-multiselect";
@@ -66,6 +75,7 @@ export default {
     ...mapGetters("products", ["allProducts"]),
     ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
     ...mapGetters("symptoms", ["allSymptoms"]),
+    ...mapGetters("cart", ["cartItems"]),
 
     symptomsOptions() {
       return this.allSymptoms.map((symptom) => ({
@@ -122,6 +132,7 @@ export default {
     ...mapActions("products", ["fetchProductsAction"]),
     ...mapActions("conditions", ["fetchConditionsAction"]),
     ...mapActions("symptoms", ["fetchSymptomsAction"]),
+    ...mapActions("cart", ["addToCartAction"]),
 
     filterBySymptoms() {
       return this.allProducts.filter((product) => {
@@ -157,6 +168,17 @@ export default {
         this.loading = false;
       }
     },
+
+addToCart(product) {
+  if (!product.stock || product.stock < 1) {
+    alert("This product is out of stock.");
+    return;
+  }
+
+  this.addToCartAction({ product, quantity: 1 });
+  alert(`${product.name} added to cart!`);
+},
+
   },
 
   created() {
@@ -164,7 +186,3 @@ export default {
   },
 };
 </script>
-
-<style>
-@import "vue-multiselect/dist/vue-multiselect.min.css";
-</style>
