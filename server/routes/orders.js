@@ -57,7 +57,7 @@ router.post("/", async (req, res) => {
     const { productsOrdered, query } = req.body;
     const userId = req.user && req.user.uid ? req.user.uid : undefined;
 
-    if (!productsOrdered || !Array.isArray(productsOrdered)) {
+    if (!productsOrdered || !Array.isArray(productsOrdered) || productsOrdered.length === 0) {
       return res
         .status(400)
         .json({ error: "Products are required to place an order" });
