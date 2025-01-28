@@ -1,16 +1,14 @@
 const cartModule = {
     state: () => ({
-      cart: [], // Produsele din coș
+      cart: [], 
     }),
     mutations: {
         addToCart(state, { product, quantity }) {
             const existingProduct = state.cart.find((item) => item.id === product.id);
             if (existingProduct) {
               const totalQuantity = existingProduct.quantity + quantity;
-              // Asigură-te că nu depășește stocul
               existingProduct.quantity = Math.min(totalQuantity, product.stock);
             } else {
-              // Adaugă produsul în coș cu cantitatea limitată la stocul disponibil
               state.cart.push({
                 id: product.id,
                 name: product.name,
@@ -24,12 +22,14 @@ const cartModule = {
       updateCartQuantity(state, { id, quantity }) {
         const product = state.cart.find((item) => item.id === id);
         if (product) {
-          // Validare: între 1 și stoc
           product.quantity = Math.max(1, Math.min(quantity, product.stock));
         }
       },
       removeFromCart(state, id) {
         state.cart = state.cart.filter((item) => item.id !== id);
+      },
+      clearCart(state) {
+        state.cart = [];
       },
     },
     actions: {
@@ -41,6 +41,9 @@ const cartModule = {
       },
       removeFromCartAction({ commit }, id) {
         commit("removeFromCart", id);
+      },
+      clearCartAction({ commit }) {
+        commit("clearCart");
       },
     },
     getters: {
