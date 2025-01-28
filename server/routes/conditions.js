@@ -28,7 +28,7 @@ router.get('/', checkRole('client'), async (req, res) => {
       const isUsed = products.some(
         (product) =>
           Array.isArray(product.conditionsTreated) &&
-          product.conditionsTreated.includes(condition.id)
+          product.conditionsTreated.some(conditionFormProduct => condition.id === conditionFormProduct.id)
       );
       return { ...condition, isUsed };
     });

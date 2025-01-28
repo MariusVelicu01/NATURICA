@@ -6,7 +6,8 @@ const validateConditionOnDelete = async (req, res, next) => {
     const products = await getAllDocuments('products');
     
     const isUsedInProducts = products.some(product => 
-      product.conditionsTreated && product.conditionsTreated.includes(id)
+      product.conditionsTreated && 
+      product.conditionsTreated.some(condition => condition.id === id)
     );
 
     if (isUsedInProducts) {
@@ -30,8 +31,9 @@ const validateConditionOnUpdate = async (req, res, next) => {
     }
 
     const products = await getAllDocuments('products');
-    const isUsedInProducts = products.some(product =>
-      product.conditionsTreated && product.conditionsTreated.includes(id)
+    const isUsedInProducts = products.some(product => 
+      product.conditionsTreated && 
+      product.conditionsTreated.some(condition => condition.id === id)
     );
 
     const existingCondition = await getDocumentById('conditions', id);

@@ -22,7 +22,7 @@ router.get('/', checkRole('client'), async (req, res) => {
 
     const symptomsWithUsage = symptoms.map((symptom) => {
       const isUsed = conditions.some((condition) =>
-        condition.symptoms?.includes(symptom.id)
+        Array.isArray(condition.symptoms) && condition.symptoms?.some(symptomFromCondition => symptom.id === symptomFromCondition.id)
       );
       return { ...symptom, isUsed: isUsed };
     });

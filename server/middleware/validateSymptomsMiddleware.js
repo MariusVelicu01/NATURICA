@@ -6,7 +6,7 @@ const validateSymptomOnDelete = async (req, res, next) => {
     const conditions = await getAllDocuments('conditions');
     
     const isUsedInCondition = conditions.some(condition => 
-      condition.symptoms && condition.symptoms.includes(id)
+      condition.symptoms && condition.symptoms.some(symptom => symptom.id === id)
     );
 
     if (isUsedInCondition) {
@@ -37,7 +37,7 @@ const validateSymptomOnUpdate = async (req, res, next) => {
     }
     
     const isUsedInCondition = conditions.some(condition => 
-      condition.symptoms && condition.symptoms.includes(id)
+      condition.symptoms && condition.symptoms.some(symptom => symptom.id === id)
     );
 
     if (isUsedInCondition) {
