@@ -22,12 +22,21 @@ import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: 'HeaderClient',
-    computed: {
+  computed: {
     ...mapGetters("cart", ["cartCount"]),
+    userId() {
+      return this.$store.getters["auth/userId"];
+    }
   },
   methods: {
-    ...mapActions(['logout']),
-    handleLogout() {
+    ...mapActions("auth", ["logout"]),
+    ...mapActions("cart", ["clearCartAction", "saveCartToDatabase"]),
+
+    async handleLogout() {
+      if (this.userId) {
+        await this.saveCartToDatabase(this.userId);
+      }
+      this.clearCartAction();
       this.logout();
       this.$router.push('/');
     },

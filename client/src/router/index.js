@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import { combinedOrderGuards, requireCartItems } from '@/validators/orderWrappers';
+import { combinedOrderGuards, requireCartItems } from '../validations/orderWrappers';
 import store from '../store/store';
 import Login from '../views/auth/Login.vue';
 import Signup from '../views/auth/Signup.vue';
@@ -63,20 +63,22 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    if (to.meta.requiresAuth && !store.getters.isAuthenticated) {
-      next('/');
-    } else if (to.meta.role && store.getters.userRole !== to.meta.role) {
-      next('/');
-    } else if (store.getters.isAuthenticated) {
-      const userRole = store.getters.userRole;
-      if (!to.path.startsWith(`/${userRole}`)) {
-        next(`/${userRole}/home`);
-      } else {
-        next(); 
-      }
+  const isAuth = store.getters["auth/isAuthenticated"]; 
+  const userRole = store.getters["auth/userRole"];
+
+  if (to.meta.requiresAuth && !isAuth) {
+    next('/');
+  } else if (to.meta.role && userRole !== to.meta.role) {
+    next('/');
+  } else if (isAuth) {
+    if (!to.path.startsWith(`/${userRole}`)) {
+      next(`/${userRole}/home`);
     } else {
       next();
     }
-  });
+  } else {
+    next();
+  }
+});
 
 export default router;

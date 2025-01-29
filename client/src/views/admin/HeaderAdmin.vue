@@ -24,7 +24,7 @@ import { mapActions } from 'vuex';
 export default {
   name: 'HeaderAdmin',
   methods: {
-    ...mapActions(['logout']),
+    ...mapActions('auth',['logout']),
     handleLogout() {
       this.logout();
       this.$router.push('/');

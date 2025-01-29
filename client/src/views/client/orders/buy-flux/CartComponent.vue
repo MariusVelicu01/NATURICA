@@ -45,6 +45,7 @@ export default {
 
 increaseQuantity(item) {
   if (item.quantity < item.stock) {
+    console.log(item)
     this.updateCartQuantityAction({ item, quantity: item.quantity + 1 });
   } else {
     alert(`You cannot add more than ${item.stock} units of this product.`);
@@ -53,6 +54,7 @@ increaseQuantity(item) {
 
 decreaseQuantity(item) {
   if (item.quantity > 1) {
+    console.log(item)
     this.updateCartQuantityAction({ item, quantity: item.quantity - 1 });
   } else {
     alert("Quantity cannot be less than 1.");

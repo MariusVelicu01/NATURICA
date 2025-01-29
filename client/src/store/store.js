@@ -7,7 +7,10 @@ import cartModule from './modules/cartModule';
 
 const store = createStore({
   modules: {
-    authModule,
+    auth:{
+      namespaced: true,
+      ...authModule
+    },
     symptoms: {
       namespaced: true, 
       ...symptomsModule,

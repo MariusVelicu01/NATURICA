@@ -3,19 +3,44 @@
     <h1>Sign Up</h1>
     <form @submit.prevent="handleSignup">
       <label>First Name:</label>
-      <input type="text" v-model="firstName" placeholder="Enter your first name" required />
+      <input
+        type="text"
+        v-model="firstName"
+        placeholder="Enter your first name"
+        required
+      />
 
       <label>Last Name:</label>
-      <input type="text" v-model="lastName" placeholder="Enter your last name" required />
+      <input
+        type="text"
+        v-model="lastName"
+        placeholder="Enter your last name"
+        required
+      />
 
       <label>Email:</label>
-      <input type="email" v-model="email" placeholder="Enter your email" required />
+      <input
+        type="email"
+        v-model="email"
+        placeholder="Enter your email"
+        required
+      />
 
       <label>Password:</label>
-      <input type="password" v-model="password" placeholder="Enter your password" required />
+      <input
+        type="password"
+        v-model="password"
+        placeholder="Enter your password"
+        required
+      />
 
       <label>Confirm Password:</label>
-      <input type="password" v-model="confirmPassword" placeholder="Confirm your password" required />
+      <input
+        type="password"
+        v-model="confirmPassword"
+        placeholder="Confirm your password"
+        required
+      />
 
       <label>Date of Birth:</label>
       <input type="date" v-model="dateOfBirth" required />
@@ -37,41 +62,40 @@
   </div>
 </template>
 
-
 <script>
-import { mapMutations } from 'vuex';
+import { mapMutations } from "vuex";
 
 export default {
-  name: 'SignupPage',
+  name: "SignupPage",
   data() {
     return {
-      firstName: '',
-      lastName: '',
-      email: '',
-      password: '',
-      confirmPassword: '',
-      dateOfBirth: '',
-      selectedRole: '',
+      firstName: "",
+      lastName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+      dateOfBirth: "",
+      selectedRole: "",
     };
   },
   methods: {
-    ...mapMutations(['signup']),
-        async handleSignup() {
+    ...mapMutations("auth", ["signup"]),
+    async handleSignup() {
       if (!this.selectedRole) {
-        alert('Please select a role');
+        alert("Please select a role");
         return;
       } else {
-        console.log(this.selectedRole)
+        console.log(this.selectedRole);
       }
       if (this.password !== this.confirmPassword) {
-        alert('Passwords do not match');
+        alert("Passwords do not match");
         return;
       }
 
       try {
-        const response = await fetch('http://localhost:3000/users/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+        const response = await fetch("http://localhost:3000/users/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             email: this.email,
             password: this.password,
@@ -86,20 +110,39 @@ export default {
 
         if (!response.ok) {
           const error = await response.json();
-          throw new Error(error.error || 'Failed to sign up');
+          throw new Error(error.error || "Failed to sign up");
         }
 
-        alert('User signed up successfully!');
+        alert("User signed up successfully!");
+
+        const meResponse = await fetch("http://localhost:3000/users/extract_uid_signup", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            email: this.email,
+            password: this.password,
+          }),
+        });
+        const userData = await meResponse.json();
+
+        console.log(userData.localId);
+
+        this.signup({
+          role: this.selectedRole,
+          token: data.token,
+          userId: userData.localId,
+        });
         
-        this.signup({ role: this.selectedRole, token: data.token });
         this.$router.push(`/${this.selectedRole}/home`);
       } catch (err) {
-        console.error('Signup Error:', err.message);
-        alert('Error during signup: ' + err.message);
+        console.error("Signup Error:", err.message);
+        alert("Error during signup: " + err.message);
       }
     },
     navigateToLogin() {
-      this.$router.push('/');
+      this.$router.push("/");
     },
   },
 };

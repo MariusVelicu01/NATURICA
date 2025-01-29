@@ -60,13 +60,13 @@ export default {
   data() {
     return {
       product: null,
-      quantity: 1, // Cantitatea implicită este 1
+      quantity: 1, 
     };
   },
   computed: {
     ...mapGetters("products", ["allProducts", "productToView"]),
     ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
-    ...mapGetters("cart", ["cartItems"]), // Pentru a gestiona coșul
+    ...mapGetters("cart", ["cartItems"]),
 
     currentSymptomsTreated() {
       return this.symptomsTreated(this.product.conditionsTreated);
@@ -100,10 +100,6 @@ addToCart() {
   this.addToCartAction({ product: this.product, quantity: this.quantity });
   alert(`${this.quantity} x ${this.product.name} added to cart!`);
 },
-
-
-
-
   },
   created() {
     this.fetchProductDetails();

@@ -64,10 +64,22 @@ async function deleteDocument(collectionName, documentId) {
   }
 }
 
+async function createOrUpdateDocument(collectionName, docId, data) {
+  const docRef = db.collection(collectionName).doc(docId);
+  const snapshot = await docRef.get();
+
+  if (!snapshot.exists) {
+    await docRef.set(data);
+  } else {
+    await docRef.update(data);
+  }
+}
+
 module.exports = {
   addDocument,
   getAllDocuments,
   getDocumentById,
   updateDocument,
   deleteDocument,
+  createOrUpdateDocument
 };

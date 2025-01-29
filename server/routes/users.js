@@ -44,7 +44,7 @@ router.post('/signup', async (req, res) => {
 
     res.status(201).json({
       message: 'User created successfully',
-      uid,
+      userID: uid,
       token: idToken,
     });
     
@@ -67,6 +67,7 @@ router.post('/login', async (req, res) => {
       }
     );
 
+
     const { idToken, email: userEmail, localId } = response.data; 
 
     const userDoc = await db.collection('users').doc(localId).get();
@@ -86,6 +87,7 @@ router.post('/login', async (req, res) => {
       token: idToken,
       role: userData.role,
       email: userEmail,
+      userId: localId,
     });
   } catch (err) {
     console.error('Login Error:', err.message);
@@ -120,16 +122,27 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-router.get('/me', async (req, res) => {
+router.post('/extract_uid_signup', async (req, res) => {
   try {
-    const userId = req.user.uid;
-    const userDoc = await getDocumentById(userId);
 
-    if (!userDoc) {
-      return res.status(404).json({ error: 'User not found' });
+    const {email, password} = req.body;
+  
+    const response = await axios.post(
+      `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${process.env.FIREBASE_API_KEY}`,
+      {
+        email,
+        password,
+      }
+    );
+    
+    console.log(response.data);
+    const { localId } = response.data; 
+
+    if (!localId) {
+      return res.status(404).json({ error: 'User id not found' });
     }
 
-    res.status(200).json(userDoc);
+    res.status(200).json({localId});
   } catch (error) {
     console.error('Error fetching user details:', error.message);
     res.status(500).json({ error: 'Failed to fetch user details' });
