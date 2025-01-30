@@ -84,6 +84,23 @@ const ordersModule = {
         console.error("Cancel Order Error:", error.message);
       }
     },
+    async confirmOrderAction({ commit }, id) {
+        try {
+          const response = await fetch(
+            `http://localhost:3000/orders/${id}/confirm`,
+            {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+            }
+          );
+          if (!response.ok) throw new Error("Failed to confirm order");
+          commit("updadeOrders", id);
+        } catch (error) {
+          console.error("Confirm Order Error:", error.message);
+        }
+      },
   },
   getters: {
     allOrders: (state) => state.orders,

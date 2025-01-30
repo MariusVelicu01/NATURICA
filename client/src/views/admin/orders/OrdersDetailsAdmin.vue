@@ -7,6 +7,12 @@
       <button v-if="order.status === 'pending'" @click="cancelOrder(this.id)">
         Cancel Order
       </button>
+      <button
+        v-if="order.status === 'pending'"
+        @click="confirmOrder(this.id)"
+      >
+        Confirm Order
+      </button>
       <p><strong>Status: </strong> {{ order.status }}</p>
       <p v-if="order.createdAt">
         <strong>Created At: </strong> {{ formatDate(order.createdAt) }}
@@ -32,7 +38,7 @@
       <div>
         <h4>Products Ordered</h4>
         <li v-for="product in order.productsOrdered" :key="product.productId">
-          <router-link :to="`/client/products/${product.productId}`">
+          <router-link :to="`/admin/products/${product.productId}`">
             <h2>{{ product.name }}</h2>
           </router-link>
           <img
@@ -43,14 +49,6 @@
           />
           <p>Price: ${{ product.price }}</p>
           <p>Quantity Ordered: {{ product.quantity }}</p>
-          <button
-            v-if="
-              order.status === 'pending' || order.productsOrdered.length !== 1
-            "
-            @click="deleteProductFromOrder(this.id, product.productId)"
-          >
-            Delete Product From Order
-          </button>
         </li>
       </div>
       <p>Total: ${{ orderTotal }}</p>
@@ -63,7 +61,7 @@
 import { mapGetters, mapActions } from "vuex";
 
 export default {
-  name: "OrderDetailsClient",
+  name: "OrderDetailsAdmin",
   data() {
     return {
       loading: true,
@@ -79,10 +77,12 @@ export default {
     ...mapActions("orders", [
       "fetchOrderAction",
       "cancelOrderAction",
-      "deleteOrderedProductAction",
+      "confirmOrderAction",
     ]),
     formatDate(timestamp) {
-      timestamp = new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1e6);
+      timestamp = new Date(
+        timestamp._seconds * 1000 + timestamp._nanoseconds / 1e6
+      );
 
       const day = String(timestamp.getDate()).padStart(2, "0");
       const month = String(timestamp.getMonth() + 1).padStart(2, "0");
@@ -108,13 +108,13 @@ export default {
         this.fetchOrderDetails();
       }
     },
-    async deleteProductFromOrder(id, productId) {
+    async confirmOrder(id) {
       const confirmed = confirm(
-        "Are you sure you want to delete this product from order?"
+        "Are you sure you want to confirm this order?"
       );
       if (confirmed) {
-        await this.deleteOrderedProductAction({ id, productId });
-        alert("Product deleted succesfully");
+        await this.confirmOrderAction(id);
+        alert("order confirmed successfully");
         this.fetchOrderDetails();
       }
     },

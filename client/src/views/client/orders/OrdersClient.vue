@@ -9,7 +9,7 @@
       <ul v-else>
         <li v-for="order in allOrders" :key="order.id">
           <router-link :to="`/client/orders/${order.id}`">
-            <h2>{{ order.id }}</h2>
+            <h2>{{ order.id }} - {{order.status}}</h2>
           </router-link>
           <div>
             <p><strong>Created At:</strong> {{ formatDate(order.createdAt) }}</p>

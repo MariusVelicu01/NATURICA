@@ -22,6 +22,7 @@ import CardPaymentClient from '../views/client/orders/buy-flux/CardPayment.vue'
 import OrderConfirmationClient from '../views/client/orders/buy-flux/OrderConfirmation.vue'
 import OrderValidationFailed from '../views/client/orders/buy-flux/OrderValidationFailed.vue'
 import OrderDetailsClient from '../views/client/orders/OrderDetailsClient.vue'
+import OrderDetailsAdmin from '../views/admin/orders/OrdersDetailsAdmin.vue'
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
@@ -55,6 +56,7 @@ const routes = [
       { path: 'products', name: 'ProductsAdmin', component: ProductsAdmin },
       { path: 'products/:id', name: 'ProductDetailsAdmin', component: ProductDetailsAdmin, props: true, },
       { path: 'orders', name: 'OrdersAdmin', component: OrdersAdmin },
+      { path: 'orders/:id', name: 'OrderDetailsAdmin', component: OrderDetailsAdmin },
     ],
   },
 ];

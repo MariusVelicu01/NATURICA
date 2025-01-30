@@ -8,6 +8,7 @@ const {
 } = require("../services/firestoreService");
 const verifyToken = require("../middleware/verifyTokenMiddleware");
 const checkOrderOwnership = require("../middleware/orderOwnershipMiddleware");
+const checkRole = require('../middleware/roleCheckerMiddleware');
 
 router.use(verifyToken);
 
@@ -288,5 +289,32 @@ router.put("/:id/cancel", checkOrderOwnership, async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
+
+router.put("/:id/confirm", checkRole('admin'), async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const existingOrder = await getDocumentById(COLLECTION_NAME, id);
+    if (!existingOrder) {
+      return res.status(404).json({ error: `Order with ID ${id} not found` });
+    }
+
+    const updatedOrder = {
+      status: "confirmed",
+      confirmedAt: new Date(),
+    };
+
+    const result = await updateDocument(COLLECTION_NAME, id, updatedOrder);
+
+    return res.status(200).json({
+      message: "Order confirmed successfully",
+      result,
+    });
+  } catch (err) {
+    console.error("Error confirming order:", err.message);
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 
 module.exports = router;
