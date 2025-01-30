@@ -2,6 +2,7 @@
   <div>
     <h1>Manage Products</h1>
     <button @click="openAddForm">Add Product</button>
+
     <div>
       <label for="symptoms-select">Filter by Symptoms:</label>
       <multiselect
@@ -49,63 +50,71 @@
       </li>
     </ul>
 
-    <div v-if="showForm">
-      <form @submit.prevent="submitForm">
-        <input v-model="form.name" placeholder="Product Name" required />
-        <textarea
-          v-model="form.productDetails"
-          placeholder="Details"
-          required
-        />
-        <multiselect
-          v-model="selectedConditions"
-          :options="conditionsOptions"
-          :multiple="true"
-          :searchable="true"
-          placeholder="Select conditions"
-          label="label"
-          track-by="value"
-        />
-        <div v-if="symptomsTreated.length > 0">
-          <h3>Symptoms Treated:</h3>
-          <ul>
-            <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
-              {{ symptom.name }}
-            </li>
-          </ul>
-        </div>
-        <input
-          v-model="form.price"
-          type="number"
-          placeholder="Price"
-          required
-        />
-        <input
-          v-model="form.stock"
-          type="number"
-          placeholder="Stock"
-          required
-        />
-        <div v-if="form.imgSrc">
-          <label>Current Image:</label>
-          <img
-            :src="form.imgSrc"
-            alt="Product Image"
-            style="max-width: 200px; display: block; margin-bottom: 10px"
-          />
-          <span>File Name: {{ extractFileName(form.imgSrc) }}</span>
-        </div>
+    <modal v-if="showForm">
+      <transition name="fade">
+      <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
+        <div class="modal-content">
+          <h2>{{ isEditing ? "Update Product" : "Add Product" }}</h2>
+          
+          <form @submit.prevent="submitForm">
+            <input v-model="form.name" placeholder="Product Name" required />
+            <textarea
+              v-model="form.productDetails"
+              placeholder="Details"
+              required
+            />
+            <multiselect
+              v-model="selectedConditions"
+              :options="conditionsOptions"
+              :multiple="true"
+              :searchable="true"
+              placeholder="Select conditions"
+              label="label"
+              track-by="value"
+            />
+            <div v-if="symptomsTreated.length > 0">
+              <h3>Symptoms Treated:</h3>
+              <ul>
+                <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
+                  {{ symptom.name }}
+                </li>
+              </ul>
+            </div>
+            <input
+              v-model="form.price"
+              type="number"
+              placeholder="Price"
+              required
+            />
+            <input
+              v-model="form.stock"
+              type="number"
+              placeholder="Stock"
+              required
+            />
+            <div v-if="form.imgSrc">
+              <label>Current Image:</label>
+              <img
+                :src="form.imgSrc"
+                alt="Product Image"
+                style="max-width: 200px; display: block; margin-bottom: 10px"
+              />
+              <span>File Name: {{ extractFileName(form.imgSrc) }}</span>
+            </div>
 
-        <label>Upload New Image:</label>
-        <input
-          type="file"
-          @change="handleFileChange"
-          accept="image/png, image/jpeg"
-        />
-        <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
-        <button @click="cancelForm">Cancel</button>
-      </form>
-    </div>
+            <label>Upload New Image:</label>
+            <input
+              type="file"
+              @change="handleFileChange"
+              accept="image/png, image/jpeg"
+            />
+            <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
+            <button type="button" @click="cancelForm">Cancel</button>
+          </form>
+        </div>
+      </div>
+    </transition>
+    </modal>
   </div>
 </template>
 
@@ -354,4 +363,33 @@ export default {
 
 <style>
 @import "vue-multiselect/dist/vue-multiselect.min.css";
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5); 
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; 
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  max-height: 80vh; 
+  overflow-y: auto;
+  width: 500px; 
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter, .fade-leave-to {
+  opacity: 0;
+}
+
 </style>

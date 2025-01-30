@@ -13,28 +13,32 @@
       </li>
     </ul>
 
-    <div v-if="showForm">
-      <h2>{{ isEditing ? "Update Condition" : "Add Condition" }}</h2>
-      <form @submit.prevent="submitForm">
-        <input
-          v-model="form.name"
-          placeholder="Enter condition name"
-          required
-        />
-        <label>Select Symptoms:</label>
-        <multiselect
-          v-model="form.selectedSymptoms"
-          :options="symptomsOptions"
-          :multiple="true"
-          :searchable="true"
-          placeholder="Search and select symptoms"
-          label="label"
-          track-by="value"
-        />
-        <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
-        <button @click="cancelForm">Cancel</button>
-      </form>
-    </div>
+    <transition name="fade">
+      <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
+        <div class="modal-content">
+          <h2>{{ isEditing ? "Update Condition" : "Add Condition" }}</h2>
+          <form @submit.prevent="submitForm">
+            <input
+              v-model="form.name"
+              placeholder="Enter condition name"
+              required
+            />
+            <label>Select Symptoms:</label>
+            <multiselect
+              v-model="form.selectedSymptoms"
+              :options="symptomsOptions"
+              :multiple="true"
+              :searchable="true"
+              placeholder="Search and select symptoms"
+              label="label"
+              track-by="value"
+            />
+            <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
+            <button type="button" @click="cancelForm">Cancel</button>
+          </form>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -89,7 +93,7 @@ export default {
       this.form.id = condition.id;
       this.form.name = condition.name;
       this.form.selectedSymptoms = condition.symptoms.map((symptom) => ({
-        value: symptom.id, 
+        value: symptom.id,
         label: symptom.name,
       }));
       this.showForm = true;
@@ -154,4 +158,35 @@ export default {
   font-style: italic;
 }
 @import "vue-multiselect/dist/vue-multiselect.min.css";
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 400px;
+}
+
+/* Animație fade-in / fade-out */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>
