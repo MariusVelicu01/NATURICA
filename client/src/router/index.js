@@ -21,6 +21,7 @@ import CheckoutComponentClient from '../views/client/orders/buy-flux/CheckoutCom
 import CardPaymentClient from '../views/client/orders/buy-flux/CardPayment.vue'
 import OrderConfirmationClient from '../views/client/orders/buy-flux/OrderConfirmation.vue'
 import OrderValidationFailed from '../views/client/orders/buy-flux/OrderValidationFailed.vue'
+import OrderDetailsClient from '../views/client/orders/OrderDetailsClient.vue'
 
 const routes = [
   { path: '/', name: 'Login', component: Login },
@@ -35,6 +36,7 @@ const routes = [
       { path: 'products', name: 'ProductsClient', component: ProductsClient },
       { path: 'products/:id', name: 'ProductDetailsClient', component: ProductDetailsClient, props: true, },
       { path: 'orders', name: 'OrdersClient', component: OrdersClient },
+      { path: 'orders/:id', name: 'OrderDetailsClient', component: OrderDetailsClient },
       { path: 'cart', name: 'CartClient', component: CartClient },
       { path: 'checkout', name: 'CheckoutClient', component: CheckoutComponentClient, beforeEnter: requireCartItems },
       { path: 'card_payment', name: 'CardPaymentClient', component: CardPaymentClient, beforeEnter: combinedOrderGuards },

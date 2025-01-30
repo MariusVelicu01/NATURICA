@@ -3,26 +3,34 @@ const { getDocumentById } = require('../services/firestoreService');
 const checkOrderOwnership = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const userRole = req.user.email.endsWith('@admin.com') ? 'admin' : 'client';
+    const userId = req.user.uid;
 
-    if (userRole === 'admin') {
+    const userDoc = await getDocumentById("users", userId);
+
+    if (!userDoc || !userDoc.role) {
+      return res.status(403).json({ error: "Access denied: Unable to determine user role" });
+    }
+
+    const userRole = userDoc.role;
+
+    if (userRole === "admin") {
       return next();
     }
 
-    const order = await getDocumentById('orders', id);
+    const order = await getDocumentById("orders", id);
 
     if (!order) {
-      return res.status(404).json({ error: 'Order not found' });
+      return res.status(404).json({ error: "Order not found" });
     }
 
-    if (order.userId !== req.user.uid) {
-      return res.status(403).json({ error: 'Unauthorized: You do not own this order' });
+    if (order.userId !== userId) {
+      return res.status(403).json({ error: "Unauthorized: You do not own this order" });
     }
 
     next();
   } catch (err) {
-    console.error('Order ownership check error:', err.message);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error("Order ownership check error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 

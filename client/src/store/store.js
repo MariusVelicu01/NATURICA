@@ -4,6 +4,7 @@ import symptomsModule from './modules/symptomsModule';
 import conditionsModule from './modules/conditionsModule';
 import productsModule from './modules/productsModule';
 import cartModule from './modules/cartModule';
+import ordersModule from './modules/ordersModule';
 
 const store = createStore({
   modules: {
@@ -26,6 +27,10 @@ const store = createStore({
     cart: {
       namespaced: true,
       ...cartModule
+    },
+    orders:{
+      namespaced: true,
+      ...ordersModule
     }
   },
 });

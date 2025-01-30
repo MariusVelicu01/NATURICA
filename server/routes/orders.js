@@ -5,7 +5,6 @@ const {
   getAllDocuments,
   getDocumentById,
   updateDocument,
-  deleteDocument,
 } = require("../services/firestoreService");
 const verifyToken = require("../middleware/verifyTokenMiddleware");
 const checkOrderOwnership = require("../middleware/orderOwnershipMiddleware");
@@ -16,18 +15,26 @@ const COLLECTION_NAME = "orders";
 
 router.get("/", async (req, res) => {
   try {
-    const userRole = req.user.email.endsWith("@admin.com") ? "admin" : "client";
+    const userId = req.user.uid;
+
+    const userDoc = await getDocumentById("users", userId);
+
+    if (!userDoc || !userDoc.role) {
+      return res
+        .status(403)
+        .json({ error: "Access denied: Unable to determine user role" });
+    }
+
+    const userRole = userDoc.role;
 
     if (userRole === "admin") {
-      const data = await getAllDocuments(COLLECTION_NAME);
+      const data = await getAllDocuments("orders");
       return res.status(200).json(data);
     }
 
     if (userRole === "client") {
-      const allOrders = await getAllDocuments(COLLECTION_NAME);
-      const userOrders = allOrders.filter(
-        (order) => order.userId === req.user.uid
-      );
+      const allOrders = await getAllDocuments("orders");
+      const userOrders = allOrders.filter((order) => order.userId === userId);
       return res.status(200).json(userOrders);
     }
 
@@ -57,7 +64,11 @@ router.post("/", async (req, res) => {
     const { productsOrdered, query } = req.body;
     const userId = req.user && req.user.uid ? req.user.uid : undefined;
 
-    if (!productsOrdered || !Array.isArray(productsOrdered) || productsOrdered.length === 0) {
+    if (
+      !productsOrdered ||
+      !Array.isArray(productsOrdered) ||
+      productsOrdered.length === 0
+    ) {
       return res
         .status(400)
         .json({ error: "Products are required to place an order" });
@@ -102,14 +113,12 @@ router.post("/", async (req, res) => {
           .json({ error: `Product with ID ${productId} not found` });
       }
 
-      const { name: productName, price, stock } = productDoc;
+      const { name: productName, price, stock, imgSrc } = productDoc;
 
       if (quantity > stock) {
-        return res
-          .status(400)
-          .json({
-            error: `Not enough stock for product ${productName}. Available: ${stock}`,
-          });
+        return res.status(400).json({
+          error: `Not enough stock for product ${productName}. Available: ${stock}`,
+        });
       }
 
       const subtotal = price * quantity;
@@ -121,6 +130,7 @@ router.post("/", async (req, res) => {
         quantity,
         price,
         subtotal,
+        imgSrc,
       });
     }
 
@@ -148,126 +158,95 @@ router.post("/", async (req, res) => {
       status: "pending",
     });
 
-    res
-      .status(201)
-      .json({
-        id: docRef.id,
-        message: "Order placed successfully",
-        details: fullOrderDetails,
-      });
+    res.status(201).json({
+      id: docRef.id,
+      message: "Order placed successfully",
+      details: fullOrderDetails,
+    });
   } catch (err) {
     console.error("Error creating order:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-router.put("/:id", checkOrderOwnership, async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { productsOrdered } = req.body;
+router.delete(
+  "/:id/product/:productId",
+  checkOrderOwnership,
+  async (req, res) => {
+    try {
+      const { id, productId } = req.params;
 
-    if (!productsOrdered || !Array.isArray(productsOrdered)) {
-      return res
-        .status(400)
-        .json({ error: "Products are required to update an order" });
-    }
-
-    const existingOrder = await getDocumentById(COLLECTION_NAME, id);
-    if (!existingOrder) {
-      return res.status(404).json({ error: `Order with ID ${id} not found` });
-    }
-
-    const previousProducts = existingOrder.productsOrdered;
-
-    const updatedOrderDetails = [];
-    let updatedTotalValue = 0;
-
-    for (const product of productsOrdered) {
-      const { productId, quantity } = product;
-
-      if (!productId || !quantity || quantity <= 0) {
-        return res
-          .status(400)
-          .json({ error: `Invalid product data: ${JSON.stringify(product)}` });
+      const existingOrder = await getDocumentById(COLLECTION_NAME, id);
+      if (!existingOrder) {
+        return res.status(404).json({ error: `Order with ID ${id} not found` });
       }
 
-      const productDoc = await getDocumentById("products", productId);
+      const previousProducts = existingOrder.productsOrdered || [];
 
-      if (!productDoc) {
-        return res
-          .status(404)
-          .json({ error: `Product with ID ${productId} not found` });
-      }
-
-      const { name, price, stock } = productDoc;
-
-      const previousProduct = previousProducts.find(
+      const productToDelete = previousProducts.find(
         (p) => p.productId === productId
       );
-      const reservedQuantity = previousProduct ? previousProduct.quantity : 0;
-
-      const effectiveStock = stock + reservedQuantity;
-
-      if (quantity > effectiveStock) {
+      if (!productToDelete) {
         return res
-          .status(400)
+          .status(404)
           .json({
-            error: `Not enough stock for product ${name}. Available: ${effectiveStock}`,
+            error: `Product with ID ${productId} not found in this order.`,
           });
       }
 
-      const subtotal = price * quantity;
-      updatedTotalValue += subtotal;
-
-      updatedOrderDetails.push({
-        productId,
-        name,
-        quantity,
-        price,
-        subtotal,
-      });
-    }
-
-    for (const prevProduct of previousProducts) {
-      const productDoc = await getDocumentById(
-        "products",
-        prevProduct.productId
-      );
-      if (productDoc) {
-        const restoredStock = productDoc.stock + prevProduct.quantity;
-        const restoredProductStatistics =
-          productDoc.productStatistics - prevProduct.quantity;
-        await updateDocument("products", prevProduct.productId, {
-          stock: restoredStock,
-          productStatistics: restoredProductStatistics,
+      if (previousProducts.length === 1) {
+        return res.status(400).json({
+          error: "Cannot remove the only product from the order.",
         });
       }
-    }
 
-    for (const product of updatedOrderDetails) {
-      const { productId, quantity } = product;
-      const productFromDatabase = await getDocumentById("products", productId);
+      const productDoc = await getDocumentById("products", productId);
+      if (!productDoc) {
+        return res
+          .status(404)
+          .json({
+            error: `Product with ID ${productId} not found in database.`,
+          });
+      }
+
+      const restoredStock = productDoc.stock + productToDelete.quantity;
+      const restoredProductStatistics =
+        productDoc.productStatistics - productToDelete.quantity;
 
       await updateDocument("products", productId, {
-        stock: productFromDatabase.stock - quantity,
-        productStatistics: productFromDatabase.productStatistics + quantity,
+        stock: restoredStock,
+        productStatistics: restoredProductStatistics,
       });
+
+      const updatedOrderDetails = previousProducts.filter(
+        (p) => p.productId !== productId
+      );
+
+      let updatedTotalValue = 0;
+      for (const product of updatedOrderDetails) {
+        updatedTotalValue += product.price * product.quantity;
+      }
+
+      const updatedOrder = {
+        productsOrdered: updatedOrderDetails,
+        totalValue: updatedTotalValue,
+        updatedAt: new Date(),
+      };
+
+      const result = await updateDocument(COLLECTION_NAME, id, updatedOrder);
+
+      return res.status(200).json({
+        message: "Product removed from the order successfully",
+        result,
+      });
+    } catch (err) {
+      console.error("Error removing product from order:", err.message);
+      return res.status(500).json({ error: err.message });
     }
-
-    const result = await updateDocument(COLLECTION_NAME, id, {
-      productsOrdered: updatedOrderDetails,
-      totalValue: updatedTotalValue,
-      updatedAt: new Date(),
-    });
-
-    res.status(200).json({ message: "Order updated successfully", result });
-  } catch (err) {
-    console.error("Error updating order:", err.message);
-    res.status(500).json({ error: err.message });
   }
-});
+);
 
-router.delete("/:id", checkOrderOwnership, async (req, res) => {
+router.put("/:id/cancel", checkOrderOwnership, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -276,8 +255,7 @@ router.delete("/:id", checkOrderOwnership, async (req, res) => {
       return res.status(404).json({ error: `Order with ID ${id} not found` });
     }
 
-    const previousProducts = existingOrder.productsOrdered;
-
+    const previousProducts = existingOrder.productsOrdered || [];
     for (const prevProduct of previousProducts) {
       const productDoc = await getDocumentById(
         "products",
@@ -294,11 +272,20 @@ router.delete("/:id", checkOrderOwnership, async (req, res) => {
       }
     }
 
-    const result = await deleteDocument(COLLECTION_NAME, id);
-    res.status(200).json(result);
+    const updatedOrder = {
+      status: "canceled",
+      canceledAt: new Date(),
+    };
+
+    const result = await updateDocument(COLLECTION_NAME, id, updatedOrder);
+
+    return res.status(200).json({
+      message: "Order canceled successfully",
+      result,
+    });
   } catch (err) {
-    console.error("Error deleting order:", err.message);
-    res.status(500).json({ error: err.message });
+    console.error("Error canceling order:", err.message);
+    return res.status(500).json({ error: err.message });
   }
 });
 
