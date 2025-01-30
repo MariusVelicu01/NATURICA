@@ -5,24 +5,24 @@
       <label>Email:</label>
       <input
         type="email"
-        v-model="email"
+        v-model="payload.email"
         placeholder="Enter your email"
         required
       />
       <label>Password:</label>
       <input
         type="password"
-        v-model="password"
+        v-model="payload.password"
         placeholder="Enter your password"
         required
       />
       <div>
         <label>
-          <input type="radio" v-model="selectedRole" value="client" />
+          <input type="radio" v-model="payload.selectedRole" value="client" />
           Client
         </label>
         <label>
-          <input type="radio" v-model="selectedRole" value="admin" />
+          <input type="radio" v-model="payload.selectedRole" value="admin" />
           Admin
         </label>
       </div>
@@ -36,58 +36,46 @@
 </template>
 
 <script>
-import { mapMutations, mapActions } from "vuex";
+import { mapActions } from "vuex";
 
 export default {
   name: "LoginPage",
   data() {
     return {
-      email: "",
-      password: "",
-      selectedRole: "",
+      payload: {
+        email: "",
+        password: "",
+        selectedRole: "",
+      },
     };
   },
   methods: {
-    ...mapMutations("auth", ["login"]),
-     ...mapActions("cart", ["loadCartFromDatabase"]),
+    ...mapActions("auth", ["loginAction", "extractUID"]),
+    ...mapActions("cart", ["loadCartFromDatabase"]),
 
     async handleLogin() {
-      if (!this.selectedRole) {
+      if (!this.payload.selectedRole) {
         alert("Please select a role");
         return;
       }
 
-      try {
-        const response = await fetch("http://localhost:3000/users/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: this.email,
-            password: this.password,
-            selectedRole: this.selectedRole,
-          }),
-        });
-        const data = await response.json();
+      await this.loginAction(this.payload);
 
-        if (!response.ok) {
-          // data poate conține un mesaj de eroare
-          throw new Error(data.error || "Failed to login");
+      if (this.payload.selectedRole === "client") {
+        const authDetails = {
+          email: this.payload.email,
+          password: this.payload.password,
+        };
+
+        const userId = await this.extractUID(authDetails);
+
+        if (userId !== undefined) {
+          await this.loadCartFromDatabase(userId);
+        } else {
+          console.log("Unable to load previous cart");
         }
-
-        // data ar trebui să conțină { token, userId, ... }
-        this.login({
-          role: this.selectedRole,
-          token: data.token,
-          userId: data.userId, // important
-        });
-
-        await this.loadCartFromDatabase(data.userId);
-
-        this.$router.push(`/${this.selectedRole}/home`);
-      } catch (err) {
-        console.error("Login Error:", err.message);
-        alert("Error during login: " + err.message);
       }
+      this.$router.push(`/${this.payload.selectedRole}/home`);
     },
 
     navigateToSignup() {

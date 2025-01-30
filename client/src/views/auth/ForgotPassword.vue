@@ -16,6 +16,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 
 export default {
   name: "ForgotPasswordPage",
@@ -25,28 +26,10 @@ export default {
     };
   },
   methods: {
+    ...mapActions("auth",["forgotPasswordAction"]),
     async handleForgotPassword() {
-      try {
-        const response = await fetch(
-          "http://localhost:3000/users/forgot-password",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: this.email }),
-          }
-        );
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to send password reset email");
-        }
-
-        alert("Password reset email sent! Please check your inbox.");
-        this.$router.push("/");
-      } catch (error) {
-        console.error("Error:", error.message);
-        alert("Failed to send password reset email. Try again later.");
-      }
+      await this.forgotPasswordAction(this.email);
+      this.navigateToLogin();
     },
     navigateToLogin() {
       this.$router.push("/");

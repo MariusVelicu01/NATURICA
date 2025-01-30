@@ -7,7 +7,7 @@ const axios = require('axios');
 router.post('/signup', async (req, res) => {
   try {
     const { email, password, firstName, lastName, dateOfBirth, role } = req.body;
-
+    
     if (!email || !password || !firstName || !lastName || !dateOfBirth || !role) {
       return res.status(400).json({ error: 'All fields are required' });
     }
@@ -122,8 +122,9 @@ router.post('/forgot-password', async (req, res) => {
   }
 });
 
-router.post('/extract_uid_signup', async (req, res) => {
+router.post('/extract_uid', async (req, res) => {
   try {
+
 
     const {email, password} = req.body;
   
@@ -135,7 +136,6 @@ router.post('/extract_uid_signup', async (req, res) => {
       }
     );
     
-    console.log(response.data);
     const { localId } = response.data; 
 
     if (!localId) {

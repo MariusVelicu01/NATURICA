@@ -81,7 +81,6 @@ const cartModule = {
       }
     },
     async loadCartFromDatabase({ commit }, userId) {
-      console.log(userId);
       if (!userId) return; 
   
       try {
