@@ -10,6 +10,9 @@ const ordersModule = {
     setOrder(state, order) {
       state.order = order;
     },
+    addOrder(state, order) {
+      state.orders.push(order);
+    },
     updadeOrders(state, updatedOrder) {
       const index = state.orders.findIndex((p) => p.id === updatedOrder.id);
       if (index !== -1) {
@@ -44,6 +47,28 @@ const ordersModule = {
         commit("setOrder", data);
       } catch (error) {
         console.error("Fetch Order Error:", error.message);
+      }
+    },
+    async addOrderAction({ commit }, payload) {
+      try {
+        console.log(payload);
+        const response = await fetch("http://localhost:3000/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to place order");
+        }
+        const data = await response.json();
+        commit("addOrder", data);
+      } catch (error) {
+        console.error("Error placing order:", error.message);
+        alert("Something went wrong while placing your order.");
       }
     },
     async deleteOrderedProductAction({ commit }, { id, productId }) {
@@ -85,22 +110,22 @@ const ordersModule = {
       }
     },
     async confirmOrderAction({ commit }, id) {
-        try {
-          const response = await fetch(
-            `http://localhost:3000/orders/${id}/confirm`,
-            {
-              method: "PUT",
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
-              },
-            }
-          );
-          if (!response.ok) throw new Error("Failed to confirm order");
-          commit("updadeOrders", id);
-        } catch (error) {
-          console.error("Confirm Order Error:", error.message);
-        }
-      },
+      try {
+        const response = await fetch(
+          `http://localhost:3000/orders/${id}/confirm`,
+          {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Failed to confirm order");
+        commit("updadeOrders", id);
+      } catch (error) {
+        console.error("Confirm Order Error:", error.message);
+      }
+    },
   },
   getters: {
     allOrders: (state) => state.orders,

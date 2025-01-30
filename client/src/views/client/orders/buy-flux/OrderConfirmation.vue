@@ -6,13 +6,13 @@
     <div v-else>
       <h1>Order Confirmation</h1>
       <p>Thank you for your order!</p>
-      <router-link to="/client/products">Back to Products</router-link>
+      <router-link to="/client/orders">View Orders</router-link>
     </div>
   </div>
 </template>
 
 <script>
-import { mapGetters } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   data() {
@@ -24,9 +24,11 @@ export default {
     this.submitOrder();
   },
   computed: {
-    ...mapGetters("cart", ["cartItems", "cartTotal"]),
+    ...mapGetters("cart", ["cartItems"]),
   },
   methods: {
+    ...mapActions("orders", ["addOrderAction"]),
+    ...mapActions("cart",["clearCartAction"]),
     async submitOrder() {
       const orderData = {
         productsOrdered: this.cartItems.map((item) => ({
@@ -43,28 +45,9 @@ export default {
         },
       };
 
-      try {
-        const response = await fetch("http://localhost:3000/orders", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-          body: JSON.stringify(orderData),
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to place order");
-        }
-
-        const result = await response.json();
-        console.log("Order placed successfully:", result);
-        await this.$store.dispatch("cart/clearCartAction");
-        this.isLoading = false;
-      } catch (error) {
-        console.error("Error placing order:", error.message);
-        alert("Something went wrong while placing your order.");
-      }
+      await this.addOrderAction(orderData);
+      await this.clearCartAction();
+      this.isLoading = false;
     },
   },
 };

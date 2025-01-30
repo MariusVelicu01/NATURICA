@@ -67,8 +67,6 @@ export default {
         return;
       }
 
-      console.log(this.query);
-
       this.$router.push({
         name: "OrderConfirmationClient",
         query: this.query

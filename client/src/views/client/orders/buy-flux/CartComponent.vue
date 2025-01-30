@@ -16,7 +16,8 @@
             alt="Product Image"
             style="max-width: 100px; margin-bottom: 10px"
           />
-          <p>Quantity: 
+          <p>
+            Quantity:
             <button @click="decreaseQuantity(item)">-</button>
             {{ item.quantity }}
             <button @click="increaseQuantity(item)">+</button>
@@ -34,7 +35,7 @@
 </template>
 
 <script>
-import {mapActions, mapGetters} from 'vuex'
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   computed: {
@@ -43,35 +44,34 @@ export default {
   methods: {
     ...mapActions("cart", ["removeFromCartAction", "updateCartQuantityAction"]),
 
-increaseQuantity(item) {
-  if (item.quantity < item.stock) {
-    console.log(item)
-    this.updateCartQuantityAction({ item, quantity: item.quantity + 1 });
-  } else {
-    alert(`You cannot add more than ${item.stock} units of this product.`);
-  }
-},
+    increaseQuantity(item) {
+      if (item.quantity < item.stock) {
+        console.log(item);
+        this.updateCartQuantityAction({ item, quantity: item.quantity + 1 });
+      } else {
+        alert(`You cannot add more than ${item.stock} units of this product.`);
+      }
+    },
 
-decreaseQuantity(item) {
-  if (item.quantity > 1) {
-    console.log(item)
-    this.updateCartQuantityAction({ item, quantity: item.quantity - 1 });
-  } else {
-    alert("Quantity cannot be less than 1.");
-  }
-},
+    decreaseQuantity(item) {
+      if (item.quantity > 1) {
+        console.log(item);
+        this.updateCartQuantityAction({ item, quantity: item.quantity - 1 });
+      } else {
+        alert("Quantity cannot be less than 1.");
+      }
+    },
 
     removeFromCart(item) {
       this.removeFromCartAction(item.id);
     },
 
     checkout() {
-      this.$router.push('checkout');
+      this.$router.push("checkout");
     },
   },
 };
 </script>
-
 
 <style>
 ul {
