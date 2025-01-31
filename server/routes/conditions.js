@@ -107,4 +107,34 @@ router.delete('/:id', checkRole('admin'), validateConditionOnDelete, async (req,
   }
 });
 
+router.post("/add-from-api", checkRole("admin"), async (req, res) => {
+  try {
+    const { conditions } = req.body;
+    if (!conditions || conditions.length === 0) {
+      return res.status(400).json({ error: "No conditions received." });
+    }
+
+    const existingConditions = await getAllDocuments("conditions");
+    const existingNames = new Set(existingConditions.map(c => c.name.toLowerCase().trim()));
+
+    let addedCount = 0;
+    let skippedCount = 0;
+
+    for (const condition of conditions) {
+      if (existingNames.has(condition.toLowerCase().trim())) {
+        skippedCount++; 
+      } else {
+        await addDocument("conditions", { name: condition, symptoms: [] });
+        addedCount++;
+        existingNames.add(condition.toLowerCase().trim());
+      }
+    }
+
+    return res.status(201).json({ added: addedCount, skipped: skippedCount });
+  } catch (err) {
+    console.error("Error adding conditions from API:", err.message);
+    res.status(500).json({ error: "Failed to add conditions from API." });
+  }
+});
+
 module.exports = router;

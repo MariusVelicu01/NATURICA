@@ -4,14 +4,47 @@
 
     <button @click="openAddForm">Add Condition</button>
 
-    <ul>
+    <label>Number of conditions to fetch:</label>
+    <input type="number" v-model="apiContitionsCount" min="0" max="20" />
+
+    <button @click="fetchConditionsFromAPI">Fetch Conditions from API</button>
+
+    <!-- <ul>
       <li v-for="condition in allConditions" :key="condition.id">
+        <span>{{ condition.name }}</span>
+        <span v-if="condition.isUsed" class="hint"> - Linked to a product</span>
+        <span v-if="condition.symptoms.length === 0" class="hint">
+          - Generated from API (Needs symptoms)
+        </span>
+        <button @click="editCondition(condition)">Update</button>
+        <button @click="deleteCondition(condition.id)">Delete</button>
+      </li>
+    </ul> -->
+
+    <h2>Valid Conditions</h2>
+    <ul v-if="conditionsWithSymptoms.length > 0">
+      <li v-for="condition in this.conditionsWithSymptoms" :key="condition.id">
         <span>{{ condition.name }}</span>
         <span v-if="condition.isUsed" class="hint"> - Linked to a product</span>
         <button @click="editCondition(condition)">Update</button>
         <button @click="deleteCondition(condition.id)">Delete</button>
       </li>
     </ul>
+    <p v-else>No confirmed conditions available.</p>
+
+    <h2>Conditions Without Symptoms (Generated from API)</h2>
+    <ul v-if="this.conditionsWithoutSymptoms.length > 0">
+      <li
+        v-for="condition in this.conditionsWithoutSymptoms"
+        :key="condition.id"
+      >
+        <span>{{ condition.name }}</span>
+        <span class="hint"> - Generated from API (Needs symptoms)</span>
+        <button @click="editCondition(condition)">Add Symptoms</button>
+        <button @click="deleteCondition(condition.id)">Delete</button>
+      </li>
+    </ul>
+    <p v-else>All API conditions have been confirmed.</p>
 
     <transition name="fade">
       <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
@@ -58,11 +91,27 @@ export default {
         selectedSymptoms: [],
       },
       symptomsOptions: [],
+      apiContitionsCount: 5,
     };
   },
   computed: {
     ...mapGetters("conditions", ["allConditions"]),
     ...mapGetters("symptoms", ["allSymptoms"]),
+
+   conditionsWithSymptoms() {
+    if (!Array.isArray(this.allConditions)) return [];
+    return this.allConditions.filter(
+      (condition) => Array.isArray(condition.symptoms) && condition.symptoms.length > 0
+    );
+  },
+
+  conditionsWithoutSymptoms() {
+    if (!Array.isArray(this.allConditions)) return [];
+    return this.allConditions.filter(
+      (condition) =>
+        !Array.isArray(condition.symptoms) || condition.symptoms.length === 0
+    );
+  },
   },
   methods: {
     ...mapActions("conditions", [
@@ -70,10 +119,11 @@ export default {
       "addConditionAction",
       "updateConditionAction",
       "deleteConditionAction",
+      "fetchConditionsFromAPIAction",
     ]),
     ...mapActions("symptoms", ["fetchSymptomsAction"]),
 
-    async fetchData() {
+    async fetchDataOnCreate() {
       await this.fetchSymptomsAction();
       this.symptomsOptions = this.allSymptoms.map((symptom) => ({
         value: symptom.id,
@@ -115,11 +165,11 @@ export default {
 
       if (this.isEditing) {
         await this.updateConditionAction({ id: this.form.id, payload });
-        this.fetchData();
       } else {
         await this.addConditionAction(payload);
-        this.fetchData();
       }
+
+      await this.fetchConditionsAction();
 
       this.cancelForm();
     },
@@ -131,7 +181,7 @@ export default {
       if (confirmed) {
         this.cancelForm();
         await this.deleteConditionAction(id);
-        this.fetchData();
+        await this.fetchConditionsAction();
       }
     },
 
@@ -145,9 +195,22 @@ export default {
       this.resetForm();
       this.showForm = false;
     },
+
+    async fetchConditionsFromAPI() {
+      try {
+        const response = await this.fetchConditionsFromAPIAction(
+          this.apiContitionsCount
+        );
+        alert(`Added: ${response.added}, Skipped: ${response.skipped}`);
+        this.fetchConditionsAction();
+      } catch (error) {
+        console.error("Error fetching conditions from API:", error);
+        alert("Failed to fetch conditions.");
+      }
+    },
   },
   created() {
-    this.fetchData();
+    this.fetchDataOnCreate();
   },
 };
 </script>
@@ -180,7 +243,6 @@ export default {
   width: 400px;
 }
 
-/* Animație fade-in / fade-out */
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;

@@ -137,9 +137,18 @@ export default {
   },
   computed: {
     ...mapGetters("products", ["allProducts", "productToView"]),
-    ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
+    ...mapGetters("conditions", ["allConditions","symptomsTreated"]),
     currentSymptomsTreated() {
       return this.symptomsTreated(this.product.conditionsTreated);
+    },
+    conditionsWithSymptoms() {
+      if (!Array.isArray(this.allConditions)) {
+        return [];
+      }
+      return this.allConditions.filter(
+        (condition) =>
+          Array.isArray(condition.symptoms) && condition.symptoms.length > 0
+      );
     },
   },
   methods: {
@@ -158,13 +167,13 @@ export default {
       });
     },
 
-    async fetchData() {
+    async fetchDataOnCreate() {
       await this.fetchConditionsAction();
-      this.conditionsOptions = this.allConditions.map((condition) => ({
+      this.conditionsOptions = this.conditionsWithSymptoms.map((condition) => ({
         value: condition.id,
         label: condition.name,
       }));
-      console.log(this.conditionsOptions);
+
       await this.fetchSymptomsAction();
     },
 
@@ -237,7 +246,6 @@ export default {
         alert("Product saved successfully!");
         this.cancelForm();
         await this.fetchProductDetails();
-        await this.fetchProductsAction();
       } catch (error) {
         console.error("Error saving product:", error.message);
         alert("Error saving product.");
@@ -269,14 +277,13 @@ export default {
       if (confirmed) {
         this.cancelForm();
         await this.deleteProductAction(id);
-        await this.fetchProductsAction();
         this.$router.push("/admin/products");
       }
     },
   },
   created() {
     this.fetchProductDetails();
-    this.fetchData();
+    this.fetchDataOnCreate();
   },
 };
 </script>
