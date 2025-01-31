@@ -22,6 +22,7 @@ const conditionsModule = {
         (condition) => condition.id !== id
       );
     },
+    
   },
   actions: {
     async fetchConditionsAction({ commit }) {
@@ -86,21 +87,38 @@ const conditionsModule = {
         console.error("Delete Condition Error:", error.message);
       }
     },
-    async fetchConditionsFromAPIAction(_, count) {
-      try {
-        const response = await fetch(
-          `https://clinicaltables.nlm.nih.gov/api/conditions/v3/search?terms=&maxList=${count}`
-        );
-        const result = await response.json();
-
-        if (!result || !result[3] || result[3].length === 0) {
-          throw new Error("No conditions found.");
+    async fetchConditionsFromAPIAction({ commit }, count) {
+      function getRandomOffsets(count, maxOffset = 2400) {
+        const offsets = new Set();
+        while (offsets.size < count) {
+          offsets.add(Math.floor(Math.random() * maxOffset));
         }
+        return [...offsets];
+      }
 
-        const apiConditions = result[3].map(
-          (conditionArray) => conditionArray[0]
-        ); 
+      const offsets = getRandomOffsets(count);
+      let conditions = [];
 
+      for (let offset of offsets) {
+        try {
+          const response = await fetch(
+            `https://clinicaltables.nlm.nih.gov/api/conditions/v3/search?terms=&maxList=1&offset=${offset}`
+          );
+          const result = await response.json();
+          if (result && result[3] && result[3].length > 0) {
+            conditions.push(result[3][0][0]);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch condition at offset ${offset}:`, error);
+        }
+      }
+
+      if (conditions.length === 0) {
+        console.warn("No conditions retrieved from API.");
+        return { added: 0, skipped: count };
+      }
+
+      try {
         const backendResponse = await fetch(
           "http://localhost:3000/conditions/add-from-api",
           {
@@ -109,15 +127,16 @@ const conditionsModule = {
               "Content-Type": "application/json",
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
-            body: JSON.stringify({ conditions: apiConditions }),
+            body: JSON.stringify({ conditions }),
           }
         );
 
         const backendResult = await backendResponse.json();
-
         if (!backendResponse.ok) {
           throw new Error(backendResult.error || "Failed to add conditions.");
         }
+        
+        commit("setConditions", [...conditions]);
 
         return backendResult;
       } catch (error) {
