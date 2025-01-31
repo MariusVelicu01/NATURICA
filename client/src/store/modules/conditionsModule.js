@@ -1,3 +1,5 @@
+import { faker } from "@faker-js/faker";
+
 const conditionsModule = {
   state: () => ({
     conditions: [],
@@ -91,7 +93,7 @@ const conditionsModule = {
       function getRandomOffsets(count, maxOffset = 2400) {
         const offsets = new Set();
         while (offsets.size < count) {
-          offsets.add(Math.floor(Math.random() * maxOffset));
+          offsets.add(faker.number.int({ min: 1, max: maxOffset }));
         }
         return [...offsets];
       }
@@ -135,7 +137,7 @@ const conditionsModule = {
         if (!backendResponse.ok) {
           throw new Error(backendResult.error || "Failed to add conditions.");
         }
-        
+
         commit("setConditions", [...conditions]);
 
         return backendResult;
