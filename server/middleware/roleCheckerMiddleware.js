@@ -20,7 +20,7 @@ const checkRole = (role) => {
         return next();
       }
 
-      if (userData.role === 'client') {
+      if (userData.role === 'client' && role === 'client') {
         return next();
       }
 

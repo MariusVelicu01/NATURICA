@@ -2,7 +2,7 @@ const express = require('express');
 const { db, auth } = require('../db_config/dbConfig'); 
 const router = express.Router();
 const axios = require('axios');
-
+const verifyToken = require('../middleware/verifyTokenMiddleware');
 
 router.post('/signup', async (req, res) => {
   try {
@@ -149,4 +149,21 @@ router.post('/extract_uid', async (req, res) => {
   }
 });
 
+router.get('/getUserRole', verifyToken, async (req, res) => {
+  try {
+    const userId = req.user.uid;
+    console.log(userId);
+    const userDoc = await db.collection("users").doc(userId).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userData = userDoc.data();
+    res.json({ role: userData.role });
+  } catch (error) {
+    console.error("Error fetching user data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 module.exports = router;

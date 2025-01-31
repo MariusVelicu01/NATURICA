@@ -1,11 +1,15 @@
 const cartModule = {
   namespaced: true,
   state: () => ({
-    cart: [], 
+    cart: [],
   }),
   mutations: {
     setCart(state, cart) {
-      state.cart = cart;
+      if (cart === undefined || cart === null) {
+        state.cart = [];
+      } else {
+        state.cart = cart;
+      }
       localStorage.setItem("cart", JSON.stringify(state.cart));
     },
     addToCart(state, { product, quantity }) {
@@ -60,48 +64,54 @@ const cartModule = {
     },
     loadCartFromLocalStorage({ commit }) {
       const cartData = localStorage.getItem("cart");
-        commit("setCart", JSON.parse(cartData));
+      commit("setCart", JSON.parse(cartData));
     },
     async saveCartToDatabase({ state }, userId) {
-      if (!userId) return; 
+      if (!userId) return;
       try {
-        const response = await fetch(`http://localhost:3000/saved_cart/${userId}`, {
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
-          },
-          method: 'POST',
-          body: JSON.stringify({ cart: state.cart }),
-        });
+        const response = await fetch(
+          `http://localhost:3000/saved_cart/${userId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            method: "POST",
+            body: JSON.stringify({ cart: state.cart }),
+          }
+        );
         if (!response.ok) {
-          console.error('Error saving cart:', await response.text());
+          console.error("Error saving cart:", await response.text());
         }
       } catch (error) {
-        console.error('Error saving cart:', error.message);
+        console.error("Error saving cart:", error.message);
       }
     },
     async loadCartFromDatabase({ commit }, userId) {
-      if (!userId) return; 
-  
+      if (!userId) return;
+
       try {
-        const token = localStorage.getItem('token'); 
-        const response = await fetch(`http://localhost:3000/saved_cart/${userId}`, {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${token}`, 
-          },
-        });
-  
+        const token = localStorage.getItem("token");
+        const response = await fetch(
+          `http://localhost:3000/saved_cart/${userId}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
         if (response.ok) {
-          const data = await response.json(); 
-          commit('setCart', data.cart);
+          const data = await response.json();
+          commit("setCart", data.cart);
         } else {
-          console.warn('Could not load cart from DB:', await response.text());
-          commit('setCart', []); 
+          console.warn("Could not load cart from DB:", await response.text());
+          commit("setCart", []);
         }
       } catch (error) {
-        console.error('Error loading cart from DB:', error.message);
-        commit('setCart', []);
+        console.error("Error loading cart from DB:", error.message);
+        commit("setCart", []);
       }
     },
   },

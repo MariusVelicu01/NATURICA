@@ -1,21 +1,19 @@
 const authModule = {
   state: () => ({
     isAuthenticated: false,
-    userRole: null,
     token: null,
     userId: null,
+    userRole: null
   }),
   mutations: {
     login(state, payload) {
-      const { role, token, userId } = payload;
+      const { token, userId } = payload;
 
       state.isAuthenticated = true;
-      state.userRole = role;
       state.token = token;
       state.userId = userId;
 
       localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("userRole", role);
       localStorage.setItem("token", token);
       localStorage.setItem("userId", userId);
     },
@@ -26,7 +24,6 @@ const authModule = {
       state.userId = userId;
 
       localStorage.setItem("isAuthenticated", true);
-      localStorage.setItem("userRole", role);
       localStorage.setItem("token", token);
       localStorage.setItem("userId", userId);
     },
@@ -37,7 +34,6 @@ const authModule = {
       state.userId = null;
 
       localStorage.removeItem("isAuthenticated");
-      localStorage.removeItem("userRole");
       localStorage.removeItem("token");
       localStorage.removeItem("userId");
     },
@@ -48,17 +44,18 @@ const authModule = {
     initializeStore(state) {
       const isAuthenticated =
         localStorage.getItem("isAuthenticated") === "true";
-      const userRole = localStorage.getItem("userRole");
       const token = localStorage.getItem("token");
       const userId = localStorage.getItem("userId");
 
-      if (isAuthenticated && userRole && token && userId) {
+      if (isAuthenticated && token && userId) {
         state.isAuthenticated = true;
-        state.userRole = userRole;
         state.token = token;
         state.userId = userId;
       }
     },
+    setUserRole(state, role) {
+      state.userRole = role;
+    }
   },
   actions: {
     logout({ commit }) {
@@ -187,6 +184,26 @@ const authModule = {
       } catch (error) {
         console.error("Error:", error.message);
         alert("Failed to send password reset email. Try again later.");
+      }
+    },
+    async fetchUserRole({ commit }) {
+      try {
+        const response = await fetch("http://localhost:3000/users/getUserRole", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await response.json();
+    
+        if (response.ok) {
+          commit("setUserRole", data.role);
+          return data.role;
+        } else {
+          return null;
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+        return null;
       }
     }
   },

@@ -66,9 +66,13 @@ const router = createRouter({
   routes,
 });
 
-router.beforeEach((to, from, next) => {
-  const isAuth = store.getters["auth/isAuthenticated"]; 
-  const userRole = store.getters["auth/userRole"];
+router.beforeEach(async (to, from, next) => {
+  const isAuth = store.getters["auth/isAuthenticated"];
+  let userRole = store.getters["auth/userRole"];
+
+  if (isAuth && !userRole) {
+    userRole = await store.dispatch("auth/fetchUserRole");
+  }
 
   if (to.meta.requiresAuth && !isAuth) {
     next('/');
