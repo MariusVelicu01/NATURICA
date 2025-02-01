@@ -1,3 +1,5 @@
+import { decryptData } from "../../utils/encryptData";
+
 const productsModule = {
     state: () => ({
       products: [], 
@@ -28,7 +30,7 @@ const productsModule = {
         try {
           const response = await fetch('http://localhost:3000/products', {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
           if (!response.ok) throw new Error('Failed to fetch products');
@@ -42,7 +44,7 @@ const productsModule = {
         try {
           const response = await fetch(`http://localhost:3000/products/${id}`, {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
           if (!response.ok) throw new Error('Failed to fetch products');
@@ -58,7 +60,7 @@ const productsModule = {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
             body: JSON.stringify(payload),
           });
@@ -76,7 +78,7 @@ const productsModule = {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
             body: JSON.stringify(payload),
           });
@@ -93,7 +95,7 @@ const productsModule = {
           const response = await fetch(`http://localhost:3000/products/${id}`, {
             method: 'DELETE',
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
           if (!response.ok) throw new Error('Failed to delete product');

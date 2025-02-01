@@ -1,9 +1,11 @@
+import { encryptData, decryptData } from "../../utils/encryptData";
+
 const authModule = {
   state: () => ({
     isAuthenticated: false,
     token: null,
     userId: null,
-    userRole: null
+    userRole: null,
   }),
   mutations: {
     login(state, payload) {
@@ -14,8 +16,8 @@ const authModule = {
       state.userId = userId;
 
       localStorage.setItem("isAuthenticated", "true");
-      localStorage.setItem("token", token);
-      localStorage.setItem("userId", userId);
+      localStorage.setItem("token", encryptData(token));
+      localStorage.setItem("userId", encryptData(userId));
     },
     signup(state, payload) {
       const { role, token, userId } = payload;
@@ -24,8 +26,8 @@ const authModule = {
       state.userId = userId;
 
       localStorage.setItem("isAuthenticated", true);
-      localStorage.setItem("token", token);
-      localStorage.setItem("userId", userId);
+      localStorage.setItem("token", encryptData(token));
+      localStorage.setItem("userId", encryptData(userId));
     },
     logout(state) {
       state.isAuthenticated = false;
@@ -39,13 +41,14 @@ const authModule = {
     },
     userID(state, userId) {
       state.userId = userId;
-      localStorage.setItem("userId", userId);
+      localStorage.setItem("userId", encryptData(userId));
     },
     initializeStore(state) {
       const isAuthenticated =
         localStorage.getItem("isAuthenticated") === "true";
-      const token = localStorage.getItem("token");
-      const userId = localStorage.getItem("userId");
+        const token = localStorage.getItem("token") ? decryptData(localStorage.getItem("token")) : null;
+        const userId = localStorage.getItem("userId") ? decryptData(localStorage.getItem("userId")) : null;
+      
 
       if (isAuthenticated && token && userId) {
         state.isAuthenticated = true;
@@ -55,7 +58,7 @@ const authModule = {
     },
     setUserRole(state, role) {
       state.userRole = role;
-    }
+    },
   },
   actions: {
     logout({ commit }) {
@@ -119,7 +122,7 @@ const authModule = {
         alert("Error during extract UID: " + err.message);
       }
     },
-    async signupAction({commit, dispatch}, payload){
+    async signupAction({ commit, dispatch }, payload) {
       try {
         const response = await fetch("http://localhost:3000/users/signup", {
           method: "POST",
@@ -142,21 +145,21 @@ const authModule = {
 
         const authPayload = {
           email: payload.email,
-          password: payload.password
+          password: payload.password,
         };
-        
+
         const userID = await dispatch("extractUID", authPayload);
 
-        if(userID===undefined){
+        if (userID === undefined) {
           throw new Error("Unable to extract UID");
         }
 
         const singupPayload = {
           role: payload.selectedRole,
           token: data.token,
-          userId: userID
-        }
-        commit("signup",singupPayload);
+          userId: userID,
+        };
+        commit("signup", singupPayload);
 
         alert("User signed up successfully!");
       } catch (err) {
@@ -164,7 +167,7 @@ const authModule = {
         alert("Error during signup: " + err.message);
       }
     },
-    async forgotPasswordAction(_, email){
+    async forgotPasswordAction(_, email) {
       try {
         const response = await fetch(
           "http://localhost:3000/users/forgot-password",
@@ -188,13 +191,16 @@ const authModule = {
     },
     async fetchUserRole({ commit }) {
       try {
-        const response = await fetch("http://localhost:3000/users/getUserRole", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
+        const response = await fetch(
+          "http://localhost:3000/users/getUserRole",
+          {
+            headers: {
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            },
+          }
+        );
         const data = await response.json();
-    
+
         if (response.ok) {
           commit("setUserRole", data.role);
           return data.role;
@@ -205,7 +211,7 @@ const authModule = {
         console.error("Error fetching user role:", error);
         return null;
       }
-    }
+    },
   },
   getters: {
     isAuthenticated: (state) => state.isAuthenticated,

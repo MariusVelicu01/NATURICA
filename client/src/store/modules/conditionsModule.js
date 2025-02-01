@@ -1,4 +1,5 @@
 import { faker } from "@faker-js/faker";
+import { decryptData } from "../../utils/encryptData";
 
 const conditionsModule = {
   state: () => ({
@@ -31,7 +32,7 @@ const conditionsModule = {
       try {
         const response = await fetch("http://localhost:3000/conditions", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
         });
         if (!response.ok) throw new Error("Failed to fetch conditions");
@@ -47,7 +48,7 @@ const conditionsModule = {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
           body: JSON.stringify(payload),
         });
@@ -64,7 +65,7 @@ const conditionsModule = {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
           body: JSON.stringify(payload),
         });
@@ -80,7 +81,7 @@ const conditionsModule = {
         const response = await fetch(`http://localhost:3000/conditions/${id}`, {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
         });
         if (!response.ok) throw new Error("Failed to delete condition");
@@ -127,7 +128,7 @@ const conditionsModule = {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
             },
             body: JSON.stringify({ conditions }),
           }

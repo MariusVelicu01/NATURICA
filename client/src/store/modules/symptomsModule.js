@@ -1,3 +1,5 @@
+import { decryptData } from "../../utils/encryptData";
+
 const symptomsModule = {
     state: () => ({
       symptoms: [],
@@ -24,7 +26,7 @@ const symptomsModule = {
         try {
           const response = await fetch('http://localhost:3000/symptoms', {
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
           if (!response.ok) throw new Error('Failed to fetch symptoms');
@@ -40,7 +42,7 @@ const symptomsModule = {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
             body: JSON.stringify({ name }),
           });
@@ -57,7 +59,7 @@ const symptomsModule = {
             method: 'PUT',
             headers: {
               'Content-Type': 'application/json',
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
             body: JSON.stringify({ name }),
           });
@@ -73,7 +75,7 @@ const symptomsModule = {
           const response = await fetch(`http://localhost:3000/symptoms/${id}`, {
             method: 'DELETE',
             headers: {
-              Authorization: `Bearer ${localStorage.getItem('token')}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
           if (!response.ok) throw new Error('Failed to delete symptom');

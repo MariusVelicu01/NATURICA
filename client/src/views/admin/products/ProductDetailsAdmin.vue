@@ -108,6 +108,7 @@
 <script>
 import Multiselect from "vue-multiselect";
 import { mapGetters, mapActions } from "vuex";
+import {decryptData} from '../../../utils/encryptData'
 
 export default {
   components: { Multiselect },
@@ -210,7 +211,7 @@ export default {
             {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
               },
               body: formData,
             }

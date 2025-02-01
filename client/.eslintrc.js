@@ -2,6 +2,7 @@ module.exports = {
     env: {
       browser: true,
       es2021: true,
+      node: true
     },
     extends: [
       'plugin:vue/vue3-essential',
@@ -13,5 +14,7 @@ module.exports = {
       parser: '@babel/eslint-parser',
       requireConfigFile: false,
     },
-    rules: {},
+    rules: {
+      "no-undef": "off"
+    },
   };

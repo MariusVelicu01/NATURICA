@@ -1,3 +1,5 @@
+import { decryptData } from "../../utils/encryptData";
+
 const ordersModule = {
   state: () => ({
     orders: [],
@@ -25,7 +27,7 @@ const ordersModule = {
       try {
         const response = await fetch("http://localhost:3000/orders", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
         });
         if (!response.ok) throw new Error("Failed to fetch orders");
@@ -39,7 +41,7 @@ const ordersModule = {
       try {
         const response = await fetch(`http://localhost:3000/orders/${id}`, {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
         });
         if (!response.ok) throw new Error("Failed to fetch order");
@@ -56,7 +58,7 @@ const ordersModule = {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
           body: JSON.stringify(payload),
         });
@@ -79,7 +81,7 @@ const ordersModule = {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
             },
           }
         );
@@ -99,7 +101,7 @@ const ordersModule = {
           {
             method: "PUT",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
             },
           }
         );
@@ -116,7 +118,7 @@ const ordersModule = {
           {
             method: "PUT",
             headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
             },
           }
         );

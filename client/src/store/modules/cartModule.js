@@ -1,3 +1,5 @@
+import { decryptData } from '../../utils/encryptData'
+
 const cartModule = {
   namespaced: true,
   state: () => ({
@@ -74,7 +76,7 @@ const cartModule = {
           {
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
             },
             method: "POST",
             body: JSON.stringify({ cart: state.cart }),
@@ -91,7 +93,7 @@ const cartModule = {
       if (!userId) return;
 
       try {
-        const token = localStorage.getItem("token");
+        const token = decryptData(localStorage.getItem("token"));
         const response = await fetch(
           `http://localhost:3000/saved_cart/${userId}`,
           {
