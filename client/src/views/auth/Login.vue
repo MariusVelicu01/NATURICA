@@ -36,7 +36,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "LoginPage",
@@ -48,6 +48,9 @@ export default {
         selectedRole: "",
       },
     };
+  },
+  computed:{
+    ...mapGetters("auth", ["getError"])
   },
   methods: {
     ...mapActions("auth", ["loginAction", "extractUID"]),
@@ -75,7 +78,13 @@ export default {
           console.log("Unable to load previous cart");
         }
       }
-      this.$router.push(`/${this.payload.selectedRole}/home`);
+
+       if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert('Successful Login!')
+          this.$router.push(`/${this.payload.selectedRole}/home`);
+        }
     },
 
     navigateToSignup() {

@@ -6,6 +6,7 @@ const authModule = {
     token: null,
     userId: null,
     userRole: null,
+    errorState: null,
   }),
   mutations: {
     login(state, payload) {
@@ -18,6 +19,7 @@ const authModule = {
       localStorage.setItem("isAuthenticated", "true");
       localStorage.setItem("token", encryptData(token));
       localStorage.setItem("userId", encryptData(userId));
+      state.errorState = null;
     },
     signup(state, payload) {
       const { role, token, userId } = payload;
@@ -28,6 +30,7 @@ const authModule = {
       localStorage.setItem("isAuthenticated", true);
       localStorage.setItem("token", encryptData(token));
       localStorage.setItem("userId", encryptData(userId));
+      state.errorState = null;
     },
     logout(state) {
       state.isAuthenticated = false;
@@ -38,17 +41,22 @@ const authModule = {
       localStorage.removeItem("isAuthenticated");
       localStorage.removeItem("token");
       localStorage.removeItem("userId");
+      state.errorState = null;
     },
     userID(state, userId) {
       state.userId = userId;
       localStorage.setItem("userId", encryptData(userId));
+      state.errorState = null;
     },
     initializeStore(state) {
       const isAuthenticated =
         localStorage.getItem("isAuthenticated") === "true";
-        const token = localStorage.getItem("token") ? decryptData(localStorage.getItem("token")) : null;
-        const userId = localStorage.getItem("userId") ? decryptData(localStorage.getItem("userId")) : null;
-      
+      const token = localStorage.getItem("token")
+        ? decryptData(localStorage.getItem("token"))
+        : null;
+      const userId = localStorage.getItem("userId")
+        ? decryptData(localStorage.getItem("userId"))
+        : null;
 
       if (isAuthenticated && token && userId) {
         state.isAuthenticated = true;
@@ -58,6 +66,10 @@ const authModule = {
     },
     setUserRole(state, role) {
       state.userRole = role;
+      state.errorState = null;
+    },
+    setError(state, error) {
+      state.errorState = error;
     },
   },
   actions: {
@@ -81,7 +93,12 @@ const authModule = {
         const data = await response.json();
 
         if (!response.ok) {
-          throw new Error(data.error || "Failed to login");
+          commit("setError", {
+            status: response.status,
+            message: data.error,
+          });
+
+          return;
         }
 
         const result = {
@@ -91,15 +108,13 @@ const authModule = {
         };
 
         commit("login", result);
-        alert("Successful login!");
       } catch (err) {
         console.error("Login Error:", err.message);
-        alert("Error during login: " + err.message);
       }
     },
     async extractUID({ commit }, payload) {
       try {
-        const meResponse = await fetch(
+        const response = await fetch(
           "http://localhost:3000/users/extract_uid",
           {
             method: "POST",
@@ -112,7 +127,16 @@ const authModule = {
             }),
           }
         );
-        const userData = await meResponse.json();
+        const userData = await response.json();
+
+        if (!response.ok) {
+          commit("setError", {
+            status: response.status,
+            message: userData.error,
+          });
+
+          return;
+        }
 
         commit("userID", userData.localId);
 
@@ -139,8 +163,12 @@ const authModule = {
         const data = await response.json();
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to sign up");
+          commit("setError", {
+            status: response.status,
+            message: data.error,
+          });
+
+          return;
         }
 
         const authPayload = {
@@ -167,7 +195,7 @@ const authModule = {
         alert("Error during signup: " + err.message);
       }
     },
-    async forgotPasswordAction(_, email) {
+    async forgotPasswordAction({ commit }, email) {
       try {
         const response = await fetch(
           "http://localhost:3000/users/forgot-password",
@@ -178,9 +206,14 @@ const authModule = {
           }
         );
 
+        const data = await response.json();
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Failed to send password reset email");
+          commit("setError", {
+            status: response.status,
+            message: data.error,
+          });
+
+          return;
         }
 
         alert("Password reset email sent! Please check your inbox.");
@@ -195,18 +228,24 @@ const authModule = {
           "http://localhost:3000/users/getUserRole",
           {
             headers: {
-              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+              Authorization: `Bearer ${decryptData(
+                localStorage.getItem("token")
+              )}`,
             },
           }
         );
         const data = await response.json();
 
-        if (response.ok) {
-          commit("setUserRole", data.role);
-          return data.role;
-        } else {
-          return null;
+        if (!response.ok) {
+          commit("setError", {
+            status: response.status,
+            message: response.error,
+          });
+
+          return;
         }
+        commit("setUserRole", data.role);
+        return data.role;
       } catch (error) {
         console.error("Error fetching user role:", error);
         return null;
@@ -218,6 +257,7 @@ const authModule = {
     userRole: (state) => state.userRole,
     token: (state) => state.token,
     userId: (state) => state.userId,
+    getError: (state) => state.errorState,
   },
 };
 

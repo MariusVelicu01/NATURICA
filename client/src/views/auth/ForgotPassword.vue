@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { mapActions } from 'vuex';
+import { mapActions, mapGetters } from 'vuex';
 
 export default {
   name: "ForgotPasswordPage",
@@ -25,10 +25,16 @@ export default {
       email: "",
     };
   },
+  computed:{
+    ...mapGetters("auth",["getError"])
+  },
   methods: {
     ...mapActions("auth",["forgotPasswordAction"]),
     async handleForgotPassword() {
       await this.forgotPasswordAction(this.email);
+      if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+      } 
       this.navigateToLogin();
     },
     navigateToLogin() {

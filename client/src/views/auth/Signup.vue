@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import { mapActions } from "vuex";
+import { mapActions, mapGetters } from "vuex";
 
 export default {
   name: "SignupPage",
@@ -79,6 +79,9 @@ export default {
         selectedRole: "",
       },
     };
+  },
+  computed: {
+    ...mapGetters("auth", ["getError"]),
   },
   methods: {
     ...mapActions("auth", ["signupAction"]),
@@ -104,7 +107,11 @@ export default {
 
       await this.signupAction(this.payload);
 
-      this.$router.push(`/${this.payload.selectedRole}/home`);
+      if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+      } else {
+        this.$router.push(`/${this.payload.selectedRole}/home`);
+      }
     },
     navigateToLogin() {
       this.$router.push("/");

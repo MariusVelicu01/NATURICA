@@ -26,6 +26,10 @@ router.post('/signup', async (req, res) => {
       displayName: `${firstName} ${lastName}`,
     });
 
+    if (!userRecord) {
+      return res.status(500).json({ error: 'Failed to create user record' });
+    }
+
     const uid = userRecord.uid;
 
     const userDoc = {
@@ -47,6 +51,10 @@ router.post('/signup', async (req, res) => {
         returnSecureToken: true,
       }
     );
+
+    if (!response || !response.data.idToken) {
+      return res.status(500).json({ error: 'Failed to retrieve authentication token' });
+    }
 
     const { idToken } = response.data; 
 
@@ -75,6 +83,9 @@ router.post('/login', async (req, res) => {
       }
     );
 
+    if (!response || !response.data.idToken) {
+      return res.status(500).json({ error: 'Invalid email or password' });
+    }
 
     const { idToken, email: userEmail, localId } = response.data; 
 
@@ -99,7 +110,7 @@ router.post('/login', async (req, res) => {
     });
   } catch (err) {
     console.error('Login Error:', err.message);
-    res.status(401).json({ error: 'Invalid email or password' });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
@@ -119,16 +130,17 @@ router.post('/forgot-password', async (req, res) => {
       }
     );
 
-    if (response.status === 200) {
-      res.status(200).json({ message: 'Password reset email sent successfully' });
-    } else {
-      throw new Error('Failed to send password reset email');
+    if (response.status !== 200) {
+      return res.status(500).json({ error: 'Failed to send password reset email' });
     }
+
+    res.status(200).json({ message: 'Password reset email sent successfully' });
   } catch (err) {
     console.error('Error sending password reset email:', err.message);
     res.status(500).json({ error: 'Failed to send password reset email' });
   }
 });
+
 
 router.post('/extract_uid', async (req, res) => {
   try {
