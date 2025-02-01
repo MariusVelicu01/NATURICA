@@ -9,18 +9,6 @@
 
     <button @click="fetchConditionsFromAPI">Fetch Conditions from API</button>
 
-    <!-- <ul>
-      <li v-for="condition in allConditions" :key="condition.id">
-        <span>{{ condition.name }}</span>
-        <span v-if="condition.isUsed" class="hint"> - Linked to a product</span>
-        <span v-if="condition.symptoms.length === 0" class="hint">
-          - Generated from API (Needs symptoms)
-        </span>
-        <button @click="editCondition(condition)">Update</button>
-        <button @click="deleteCondition(condition.id)">Delete</button>
-      </li>
-    </ul> -->
-
     <h2>Valid Conditions</h2>
     <ul v-if="conditionsWithSymptoms.length > 0">
       <li v-for="condition in this.conditionsWithSymptoms" :key="condition.id">
@@ -95,23 +83,24 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("conditions", ["allConditions"]),
+    ...mapGetters("conditions", ["allConditions", "getError"]),
     ...mapGetters("symptoms", ["allSymptoms"]),
 
-   conditionsWithSymptoms() {
-    if (!Array.isArray(this.allConditions)) return [];
-    return this.allConditions.filter(
-      (condition) => Array.isArray(condition.symptoms) && condition.symptoms.length > 0
-    );
-  },
+    conditionsWithSymptoms() {
+      if (!Array.isArray(this.allConditions)) return [];
+      return this.allConditions.filter(
+        (condition) =>
+          Array.isArray(condition.symptoms) && condition.symptoms.length > 0
+      );
+    },
 
-  conditionsWithoutSymptoms() {
-    if (!Array.isArray(this.allConditions)) return [];
-    return this.allConditions.filter(
-      (condition) =>
-        !Array.isArray(condition.symptoms) || condition.symptoms.length === 0
-    );
-  },
+    conditionsWithoutSymptoms() {
+      if (!Array.isArray(this.allConditions)) return [];
+      return this.allConditions.filter(
+        (condition) =>
+          !Array.isArray(condition.symptoms) || condition.symptoms.length === 0
+      );
+    },
   },
   methods: {
     ...mapActions("conditions", [
@@ -165,13 +154,25 @@ export default {
 
       if (this.isEditing) {
         await this.updateConditionAction({ id: this.form.id, payload });
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Condition updated successfully!");
+          this.cancelForm();
+          await this.fetchConditionsAction();
+        }
       } else {
         await this.addConditionAction(payload);
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Condition added successfully!");
+          this.cancelForm();
+          await this.fetchConditionsAction();
+        }
       }
 
-      await this.fetchConditionsAction();
-
-      this.cancelForm();
+      
     },
 
     async deleteCondition(id) {
@@ -181,7 +182,12 @@ export default {
       if (confirmed) {
         this.cancelForm();
         await this.deleteConditionAction(id);
-        await this.fetchConditionsAction();
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Condition deleted successfully!");
+          await this.fetchConditionsAction();
+        }
       }
     },
 

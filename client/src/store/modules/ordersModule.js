@@ -4,22 +4,30 @@ const ordersModule = {
   state: () => ({
     orders: [],
     order: null,
+    errorState: null,
   }),
   mutations: {
     setOrders(state, orders) {
       state.orders = orders;
+      state.errorState = null;
     },
     setOrder(state, order) {
       state.order = order;
+      state.errorState = null;
     },
     addOrder(state, order) {
       state.orders.push(order);
+      state.errorState = null;
     },
     updadeOrders(state, updatedOrder) {
       const index = state.orders.findIndex((p) => p.id === updatedOrder.id);
       if (index !== -1) {
         state.orders.splice(index, 1, updatedOrder);
       }
+      state.errorState = null;
+    },
+    setError(state, error) {
+      state.errorState = error;
     },
   },
   actions: {
@@ -27,7 +35,9 @@ const ordersModule = {
       try {
         const response = await fetch("http://localhost:3000/orders", {
           headers: {
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
         });
         if (!response.ok) throw new Error("Failed to fetch orders");
@@ -41,10 +51,20 @@ const ordersModule = {
       try {
         const response = await fetch(`http://localhost:3000/orders/${id}`, {
           headers: {
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
         });
-        if (!response.ok) throw new Error("Failed to fetch order");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         const data = await response.json();
         commit("setOrder", data);
       } catch (error) {
@@ -58,13 +78,21 @@ const ordersModule = {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
           body: JSON.stringify(payload),
         });
 
         if (!response.ok) {
-          throw new Error("Failed to place order");
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
         }
         const data = await response.json();
         commit("addOrder", data);
@@ -81,12 +109,21 @@ const ordersModule = {
             method: "DELETE",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+              Authorization: `Bearer ${decryptData(
+                localStorage.getItem("token")
+              )}`,
             },
           }
         );
-        if (!response.ok)
-          throw new Error("Failed to delete product from order");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         const updatedOrder = await response.json();
         commit("updadeOrders", updatedOrder);
       } catch (error) {
@@ -101,11 +138,21 @@ const ordersModule = {
           {
             method: "PUT",
             headers: {
-              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+              Authorization: `Bearer ${decryptData(
+                localStorage.getItem("token")
+              )}`,
             },
           }
         );
-        if (!response.ok) throw new Error("Failed to cancel order");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         commit("updadeOrders", id);
       } catch (error) {
         console.error("Cancel Order Error:", error.message);
@@ -118,11 +165,21 @@ const ordersModule = {
           {
             method: "PUT",
             headers: {
-              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+              Authorization: `Bearer ${decryptData(
+                localStorage.getItem("token")
+              )}`,
             },
           }
         );
-        if (!response.ok) throw new Error("Failed to confirm order");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         commit("updadeOrders", id);
       } catch (error) {
         console.error("Confirm Order Error:", error.message);
@@ -137,6 +194,7 @@ const ordersModule = {
         (total, product) => total + product.price * product.quantity,
         0
       ),
+    getError: (state) => state.errorState,
   },
 };
 

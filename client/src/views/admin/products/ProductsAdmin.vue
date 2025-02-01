@@ -29,10 +29,10 @@
       />
     </div>
 
-    <div v-if="loading">Loading products...</div>
-    <div v-else-if="filteredProducts.length === 0">
+    <div v-if="filteredProducts.length === 0">
       No products match your criteria.
     </div>
+    <div v-else-if="this.loading">Loading products...</div>
     <ul v-else>
       <li v-for="product in filteredProducts" :key="product.id">
         <router-link :to="`/admin/products/${product.id}`">
@@ -50,7 +50,7 @@
       </li>
     </ul>
 
-    <modal v-if="showForm">
+    <div v-if="showForm">
       <transition name="fade">
         <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
           <div class="modal-content">
@@ -117,14 +117,14 @@
           </div>
         </div>
       </transition>
-    </modal>
+    </div>
   </div>
 </template>
 
 <script>
 import Multiselect from "vue-multiselect";
 import { mapActions, mapGetters } from "vuex";
-import {decryptData} from '../../../utils/encryptData'
+import { decryptData } from "../../../utils/encryptData";
 
 export default {
   components: { Multiselect },
@@ -145,14 +145,12 @@ export default {
       conditionsOptions: [],
       selectedSymptomsFilter: [],
       selectedConditionsFilter: [],
+      loading: true,
     };
   },
   computed: {
-    ...mapGetters("products", ["allProducts"]),
-    ...mapGetters("conditions", [
-      "allConditions",
-      "symptomsTreated",
-    ]),
+    ...mapGetters("products", ["allProducts", "getError"]),
+    ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
     ...mapGetters("symptoms", ["allSymptoms"]),
     currentSymptomsTreated() {
       return this.symptomsTreated(this.selectedConditions);
@@ -165,29 +163,39 @@ export default {
       }));
     },
 
-  filteredConditionsOptions() {
-    if (!Array.isArray(this.conditionsWithSymptoms)) return [];
-    if (this.selectedSymptomsFilter.length === 0) {
-      return this.conditionsWithSymptoms.map((condition) => ({
-        value: condition.id,
-        label: condition.name,
-      }));
-    }
+    filteredConditionsOptions() {
+      if (!Array.isArray(this.conditionsWithSymptoms)) return [];
+      if (this.selectedSymptomsFilter.length === 0) {
+        return this.conditionsWithSymptoms.map((condition) => ({
+          value: condition.id,
+          label: condition.name,
+        }));
+      }
 
-    return this.conditionsWithSymptoms
-      .filter((condition) =>
-        Array.isArray(condition.symptoms) &&
-        condition.symptoms.some((symptom) =>
-          this.selectedSymptomsFilter.some(
-            (selectedSymptom) => selectedSymptom.value === symptom.id
-          )
+      return this.conditionsWithSymptoms
+        .filter(
+          (condition) =>
+            Array.isArray(condition.symptoms) &&
+            condition.symptoms.some((symptom) =>
+              this.selectedSymptomsFilter.some(
+                (selectedSymptom) => selectedSymptom.value === symptom.id
+              )
+            )
         )
-      )
-      .map((condition) => ({
-        value: condition.id,
-        label: condition.name,
-      }));
-  },
+        .map((condition) => ({
+          value: condition.id,
+          label: condition.name,
+        }));
+    },
+
+    conditionsWithSymptoms() {
+      if (!this.allConditions || !Array.isArray(this.allConditions)) return [];
+      return this.allConditions.filter(
+        (condition) =>
+          Array.isArray(condition.symptoms) && condition.symptoms.length > 0
+      );
+    },
+
     filteredProducts() {
       const productsBySymptoms = this.filterBySymptoms();
       const productsByConditions = this.filterByConditions();
@@ -197,24 +205,15 @@ export default {
         productsByConditions.length === 0
       ) {
         return this.allProducts;
-      }
-      if (productsBySymptoms.length === 0) {
+      } else if (productsBySymptoms.length === 0) {
         return productsByConditions;
-      }
-      if (productsByConditions.length === 0) {
+      } else if (productsByConditions.length === 0) {
         return productsBySymptoms;
-      }
-      return productsBySymptoms.filter((product) =>
-        productsByConditions.includes(product)
-      );
+      } else
+        return productsBySymptoms.filter((product) =>
+          productsByConditions.includes(product)
+        );
     },
-       conditionsWithSymptoms() {
-    if (!Array.isArray(this.allConditions)) return [];
-    return this.allConditions.filter(
-      (condition) => Array.isArray(condition.symptoms) && condition.symptoms.length > 0
-    );
-  },
-
   },
   methods: {
     ...mapActions("products", [
@@ -234,6 +233,7 @@ export default {
       }));
       await this.fetchProductsAction();
       await this.fetchSymptomsAction();
+      this.loading = false;
     },
 
     async fetchData() {
@@ -241,6 +241,7 @@ export default {
         value: condition.id,
         label: condition.name,
       }));
+      this.loading = false;
       await this.fetchProductsAction();
     },
 
@@ -283,14 +284,17 @@ export default {
             {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+                Authorization: `Bearer ${decryptData(
+                  localStorage.getItem("token")
+                )}`,
               },
               body: formData,
             }
           );
 
           if (!uploadResponse.ok) {
-            throw new Error("Failed to upload file.");
+            alert("Failed to upload file.");
+            return;
           }
 
           const { url } = await uploadResponse.json();
@@ -314,16 +318,25 @@ export default {
             id: this.form.id,
             payload,
           });
+          if (this.getError) {
+            alert(`Error: ${this.getError.message}`);
+          } else {
+            this.cancelForm();
+            alert("Product saved successfully!");
+            await this.fetchData();
+          }
         } else {
           await this.addProductAction(payload);
+          if (this.getError) {
+            alert(`Error: ${this.getError.message}`);
+          } else {
+            this.cancelForm();
+            window.location.reload();
+            alert("Product saved successfully!");
+          }
         }
-
-        alert("Product saved successfully!");
-        this.fetchDataOnCreate();
-        this.cancelForm();
       } catch (error) {
         console.error("Error saving product:", error.message);
-        alert("Error saving product.");
       }
     },
 
@@ -352,7 +365,13 @@ export default {
       if (confirmed) {
         this.cancelForm();
         await this.deleteProductAction(id);
-        this.fetchDataOnCreate();
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Product deleted successfully!");
+        }
+
+        await this.fetchData();
       }
     },
 

@@ -37,7 +37,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("symptoms", ["allSymptoms"]),
+    ...mapGetters("symptoms", ["allSymptoms", "getError"]),
   },
   methods: {
     ...mapActions("symptoms", [
@@ -54,6 +54,12 @@ export default {
       }
       await this.addSymptomAction(this.newSymptom);
       this.newSymptom = "";
+      if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+      } else {
+        alert("Symptom added successfully!");
+      }
+
       this.fetchSymptomsAction();
     },
     editSymptom(symptom) {
@@ -68,6 +74,12 @@ export default {
       }
       await this.updateSymptomAction({ id: this.editId, name: this.editName });
       this.cancelEdit();
+      if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+      } else {
+        alert("Symptom updated successfully!");
+      }
+
       this.fetchSymptomsAction();
     },
     async deleteSymptom(id) {
@@ -76,7 +88,13 @@ export default {
       );
       if (confirmed) {
         await this.deleteSymptomAction(id);
-        this.fetchSymptomsAction();
+        if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+      } else {
+        alert("Symptom deleted successfully!");
+      }
+
+      this.fetchSymptomsAction();
       }
     },
     cancelEdit() {

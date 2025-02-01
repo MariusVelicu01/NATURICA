@@ -7,10 +7,7 @@
       <button v-if="order.status === 'pending'" @click="cancelOrder(this.id)">
         Cancel Order
       </button>
-      <button
-        v-if="order.status === 'pending'"
-        @click="confirmOrder(this.id)"
-      >
+      <button v-if="order.status === 'pending'" @click="confirmOrder(this.id)">
         Confirm Order
       </button>
       <p><strong>Status: </strong> {{ order.status }}</p>
@@ -23,7 +20,7 @@
       <p v-if="order.canceledAt && !order.confirmedAt">
         <strong>Canceled At: </strong> {{ formatDate(order.canceledAt) }}
       </p>
-        <p v-if="order.confirmedAt">
+      <p v-if="order.confirmedAt">
         <strong>Confirmed At: </strong> {{ formatDate(order.confirmedAt) }}
       </p>
       <p></p>
@@ -70,8 +67,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("orders", ["orderToView"]),
-    ...mapGetters("orders", ["orderTotal"]),
+    ...mapGetters("orders", ["orderToView", "orderTotal", "getError"]),
   },
   methods: {
     ...mapActions("orders", [
@@ -104,18 +100,24 @@ export default {
       const confirmed = confirm("Are you sure you want to cancel this order?");
       if (confirmed) {
         await this.cancelOrderAction(id);
-        alert("Order canceled succesfully");
-        this.fetchOrderDetails();
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Order canceled succesfully");
+          this.fetchOrderDetails();
+        }
       }
     },
     async confirmOrder(id) {
-      const confirmed = confirm(
-        "Are you sure you want to confirm this order?"
-      );
+      const confirmed = confirm("Are you sure you want to confirm this order?");
       if (confirmed) {
         await this.confirmOrderAction(id);
-        alert("order confirmed successfully");
-        this.fetchOrderDetails();
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("order confirmed successfully");
+          this.fetchOrderDetails();
+        }
       }
     },
   },

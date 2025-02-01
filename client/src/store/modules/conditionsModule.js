@@ -4,13 +4,16 @@ import { decryptData } from "../../utils/encryptData";
 const conditionsModule = {
   state: () => ({
     conditions: [],
+    errorState: null,
   }),
   mutations: {
     setConditions(state, conditions) {
       state.conditions = conditions;
+      state.errorState = null;
     },
     addCondition(state, condition) {
       state.conditions.push(condition);
+      state.errorState = null;
     },
     updateCondition(state, updatedCondition) {
       const index = state.conditions.findIndex(
@@ -19,11 +22,16 @@ const conditionsModule = {
       if (index !== -1) {
         state.conditions.splice(index, 1, updatedCondition);
       }
+      state.errorState = null;
     },
     deleteCondition(state, id) {
       state.conditions = state.conditions.filter(
         (condition) => condition.id !== id
       );
+      state.errorState = null;
+    },
+    setError(state, error) {
+      state.errorState = error;
     },
     
   },
@@ -35,8 +43,20 @@ const conditionsModule = {
             Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
         });
-        if (!response.ok) throw new Error("Failed to fetch conditions");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         const data = await response.json();
+        if (!Array.isArray(data)) {
+          console.error("Error: conditions API did not return an array", data);
+          return;
+        }
         commit("setConditions", data);
       } catch (error) {
         console.error("Fetch Conditions Error:", error.message);
@@ -52,7 +72,15 @@ const conditionsModule = {
           },
           body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error("Failed to add condition");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         const newCondition = await response.json();
         commit("addCondition", newCondition);
       } catch (error) {
@@ -69,7 +97,15 @@ const conditionsModule = {
           },
           body: JSON.stringify(payload),
         });
-        if (!response.ok) throw new Error("Failed to update condition");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         const updatedCondition = await response.json();
         commit("updateCondition", updatedCondition);
       } catch (error) {
@@ -84,7 +120,15 @@ const conditionsModule = {
             Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
           },
         });
-        if (!response.ok) throw new Error("Failed to delete condition");
+        if (!response.ok) {
+          const errorMessage = await response.json();
+          commit("setError", {
+            status: response.status,
+            message: errorMessage.error,
+          });
+
+          return;
+        }
         commit("deleteCondition", id);
       } catch (error) {
         console.error("Delete Condition Error:", error.message);
@@ -136,7 +180,15 @@ const conditionsModule = {
 
         const backendResult = await backendResponse.json();
         if (!backendResponse.ok) {
-          throw new Error(backendResult.error || "Failed to add conditions.");
+          {
+            const errorMessage = await backendResult.json();
+            commit("setError", {
+              status: backendResult.status,
+              message: errorMessage.error,
+            });
+  
+            return;
+          }
         }
 
         commit("setConditions", [...conditions]);
@@ -166,6 +218,7 @@ const conditionsModule = {
 
       return Array.from(symptomsSet).map((symptom) => JSON.parse(symptom));
     },
+    getError: (state) => state.errorState,
   },
 };
 

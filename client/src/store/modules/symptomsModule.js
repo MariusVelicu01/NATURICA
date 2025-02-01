@@ -3,22 +3,30 @@ import { decryptData } from "../../utils/encryptData";
 const symptomsModule = {
     state: () => ({
       symptoms: [],
+      errorState: null,
     }),
     mutations: {
       setSymptoms(state, symptoms) {
         state.symptoms = symptoms;
+        state.errorState = null;
       },
       addSymptom(state, symptom) {
         state.symptoms.push(symptom);
+        state.errorState = null;
       },
       updateSymptom(state, updatedSymptom) {
         const index = state.symptoms.findIndex(s => s.id === updatedSymptom.id);
         if (index !== -1) {
           state.symptoms.splice(index, 1, updatedSymptom);
         }
+        state.errorState = null;
       },
       deleteSymptom(state, id) {
         state.symptoms = state.symptoms.filter(symptom => symptom.id !== id);
+        state.errorState = null;
+      },
+      setError(state, error) {
+        state.errorState = error; 
       },
     },
     actions: {
@@ -29,7 +37,12 @@ const symptomsModule = {
               Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
-          if (!response.ok) throw new Error('Failed to fetch symptoms');
+          if (!response.ok){
+            const errorMessage = await response.json();
+            commit("setError", { status: response.status, message: errorMessage.error });
+  
+            return; 
+          }
           const data = await response.json();
           commit('setSymptoms', data);
         } catch (error) {
@@ -46,7 +59,12 @@ const symptomsModule = {
             },
             body: JSON.stringify({ name }),
           });
-          if (!response.ok) throw new Error('Failed to add symptom');
+          if (!response.ok){
+            const errorMessage = await response.json();
+            commit("setError", { status: response.status, message: errorMessage.error });
+  
+            return; 
+          }
           const newSymptom = await response.json();
           commit('addSymptom', newSymptom);
         } catch (error) {
@@ -63,7 +81,12 @@ const symptomsModule = {
             },
             body: JSON.stringify({ name }),
           });
-          if (!response.ok) throw new Error('Failed to update symptom');
+          if (!response.ok) {
+            const errorMessage = await response.json();
+            commit("setError", { status: response.status, message: errorMessage.error });
+  
+            return; 
+          }
           const updatedSymptom = await response.json();
           commit('updateSymptom', updatedSymptom);
         } catch (error) {
@@ -78,7 +101,12 @@ const symptomsModule = {
               Authorization: `Bearer ${decryptData(localStorage.getItem('token'))}`,
             },
           });
-          if (!response.ok) throw new Error('Failed to delete symptom');
+          if (!response.ok) {
+            const errorMessage = await response.json();
+            commit("setError", { status: response.status, message: errorMessage.error });
+  
+            return; 
+          }
           commit('deleteSymptom', id);
         } catch (error) {
           console.error('Delete Symptom Error:', error.message);
@@ -87,6 +115,7 @@ const symptomsModule = {
     },
     getters: {
       allSymptoms: (state) => state.symptoms,
+      getError: (state) => state.errorState,
     },
   };
   

@@ -34,7 +34,7 @@
       <p>Loading product details...</p>
     </div>
 
-    <modal v-if="showForm">
+    <div v-if="showForm">
       <transition name="fade">
         <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
           <div class="modal-content">
@@ -101,14 +101,14 @@
           </div>
         </div>
       </transition>
-    </modal>
+    </div>
   </div>
 </template>
 
 <script>
 import Multiselect from "vue-multiselect";
 import { mapGetters, mapActions } from "vuex";
-import {decryptData} from '../../../utils/encryptData'
+import { decryptData } from "../../../utils/encryptData";
 
 export default {
   components: { Multiselect },
@@ -137,8 +137,8 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("products", ["allProducts", "productToView"]),
-    ...mapGetters("conditions", ["allConditions","symptomsTreated"]),
+    ...mapGetters("products", ["allProducts", "productToView", "getError"]),
+    ...mapGetters("conditions", ["allConditions", "symptomsTreated"]),
     currentSymptomsTreated() {
       return this.symptomsTreated(this.product.conditionsTreated);
     },
@@ -211,14 +211,17 @@ export default {
             {
               method: "POST",
               headers: {
-                Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+                Authorization: `Bearer ${decryptData(
+                  localStorage.getItem("token")
+                )}`,
               },
               body: formData,
             }
           );
 
           if (!uploadResponse.ok) {
-            throw new Error("Failed to upload file.");
+            alert("Failed to upload file.");
+            return;
           }
 
           const { url } = await uploadResponse.json();
@@ -244,9 +247,13 @@ export default {
           });
         }
 
-        alert("Product saved successfully!");
-        this.cancelForm();
-        await this.fetchProductDetails();
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Product saved successfully!");
+          this.cancelForm();
+          this.fetchProductDetails();
+        }
       } catch (error) {
         console.error("Error saving product:", error.message);
         alert("Error saving product.");
@@ -278,7 +285,13 @@ export default {
       if (confirmed) {
         this.cancelForm();
         await this.deleteProductAction(id);
-        this.$router.push("/admin/products");
+
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Product deleted successfully!");
+          this.$router.push("/admin/products");
+        }
       }
     },
   },

@@ -8,7 +8,8 @@ const {
   deleteDocument
 } = require('../services/firestoreService');
 const verifyToken = require('../middleware/verifyTokenMiddleware');
-const checkRole = require('../middleware/roleCheckerMiddleware');const {
+const checkRole = require('../middleware/roleCheckerMiddleware');
+const {
     validateProductOnDelete,
     validateProductName
   } = require('../middleware/validateProductsMiddleware');
