@@ -15,6 +15,5 @@ module.exports = {
       requireConfigFile: false,
     },
     rules: {
-      "no-undef": "off"
     },
   };
