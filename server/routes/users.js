@@ -12,6 +12,14 @@ router.post('/signup', async (req, res) => {
       return res.status(400).json({ error: 'All fields are required' });
     }
 
+    const birthDate = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+
+    if (age < 16) {
+      return res.status(400).json({ error: "User must be at least 16 years old." });
+    }
+
     const userRecord = await auth.createUser({
       email,
       password,

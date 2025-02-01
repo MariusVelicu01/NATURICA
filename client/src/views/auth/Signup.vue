@@ -86,10 +86,19 @@ export default {
       if (!this.payload.selectedRole) {
         alert("Please select a role");
         return;
-      } 
+      }
 
       if (this.payload.password !== this.payload.confirmPassword) {
         alert("Passwords do not match");
+        return;
+      }
+
+      const birthDate = new Date(this.payload.dateOfBirth);
+      const today = new Date();
+      let age = today.getFullYear() - birthDate.getFullYear();
+
+      if (age < 16) {
+        alert("You must be at least 16 years old to sign up.");
         return;
       }
 

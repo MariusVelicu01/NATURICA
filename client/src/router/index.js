@@ -121,15 +121,19 @@ router.beforeEach(async (to, from, next) => {
   if (isAuth && !userRole) {
     userRole = await store.dispatch("auth/fetchUserRole");
 
-    if (!userRole) { 
+    if (!userRole) {
       console.warn("Session expired. Logging out...");
-      await store.dispatch("auth/logout"); 
+      await store.dispatch("auth/logout");
       return next("/");
     }
   }
 
+  const publicRoutes = ["/", "/signup", "/forgot-password"];
+
   if (to.meta.requiresAuth && !isAuth) {
-    return next("/");
+    if (!publicRoutes.includes(to.path)) {
+      return next("/");
+    }
   } else if (to.meta.role && userRole !== to.meta.role) {
     return next("/");
   } else if (isAuth) {
