@@ -17,7 +17,7 @@
       <p v-if="order.canceledAt && !order.confirmedAt">
         <strong>Canceled At: </strong> {{ formatDate(order.canceledAt) }}
       </p>
-        <p v-if="order.confirmedAt">
+      <p v-if="order.confirmedAt">
         <strong>Confirmed At: </strong> {{ formatDate(order.confirmedAt) }}
       </p>
       <p></p>
@@ -45,7 +45,7 @@
           <p>Quantity Ordered: {{ product.quantity }}</p>
           <button
             v-if="
-              order.status === 'pending' || order.productsOrdered.length !== 1
+              order.status === 'pending'
             "
             @click="deleteProductFromOrder(this.id, product.productId)"
           >
@@ -72,8 +72,7 @@ export default {
     };
   },
   computed: {
-    ...mapGetters("orders", ["orderToView"]),
-    ...mapGetters("orders", ["orderTotal"]),
+    ...mapGetters("orders", ["orderToView", "orderTotal", "getError"]),
   },
   methods: {
     ...mapActions("orders", [
@@ -82,7 +81,9 @@ export default {
       "deleteOrderedProductAction",
     ]),
     formatDate(timestamp) {
-      timestamp = new Date(timestamp._seconds * 1000 + timestamp._nanoseconds / 1e6);
+      timestamp = new Date(
+        timestamp._seconds * 1000 + timestamp._nanoseconds / 1e6
+      );
 
       const day = String(timestamp.getDate()).padStart(2, "0");
       const month = String(timestamp.getMonth() + 1).padStart(2, "0");
@@ -93,19 +94,21 @@ export default {
       return `${day}/${month}/${year} ${hours}:${minutes}`;
     },
     async fetchOrderDetails() {
-      console.log(this.id);
       await this.fetchOrderAction(this.id).then(() => {
         this.loading = false;
         this.order = this.orderToView;
-        console.log(this.order);
       });
     },
     async cancelOrder(id) {
       const confirmed = confirm("Are you sure you want to cancel this order?");
       if (confirmed) {
         await this.cancelOrderAction(id);
-        alert("Order canceled succesfully");
-        this.fetchOrderDetails();
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Order canceled succesfully");
+          this.fetchOrderDetails();
+        }
       }
     },
     async deleteProductFromOrder(id, productId) {
@@ -114,8 +117,12 @@ export default {
       );
       if (confirmed) {
         await this.deleteOrderedProductAction({ id, productId });
-        alert("Product deleted succesfully");
-        this.fetchOrderDetails();
+                if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Product deleted succesfully");
+          this.fetchOrderDetails();
+        }
       }
     },
   },

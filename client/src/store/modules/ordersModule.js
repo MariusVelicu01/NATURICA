@@ -73,7 +73,6 @@ const ordersModule = {
     },
     async addOrderAction({ commit }, payload) {
       try {
-        console.log(payload);
         const response = await fetch("http://localhost:3000/orders", {
           method: "POST",
           headers: {

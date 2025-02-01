@@ -25,10 +25,11 @@ export default {
   },
   computed: {
     ...mapGetters("cart", ["cartItems"]),
+    ...mapGetters("orders",["getError"])
   },
   methods: {
     ...mapActions("orders", ["addOrderAction"]),
-    ...mapActions("cart",["clearCartAction"]),
+    ...mapActions("cart", ["clearCartAction"]),
     async submitOrder() {
       const orderData = {
         productsOrdered: this.cartItems.map((item) => ({
@@ -46,8 +47,17 @@ export default {
       };
 
       await this.addOrderAction(orderData);
-      await this.clearCartAction();
-      this.isLoading = false;
+
+      if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+        await this.clearCartAction();
+        this.isLoading = false;
+        this.$router.push("/client/home");
+      } else {
+        alert("Order placed successfully!");
+        await this.clearCartAction();
+        this.isLoading = false;
+      }
     },
   },
 };
