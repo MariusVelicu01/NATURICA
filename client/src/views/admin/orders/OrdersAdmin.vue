@@ -48,6 +48,20 @@
               </router-link>
             </li>
           </div>
+          <div>
+            <button
+              v-if="order.status === 'pending'"
+              @click="cancelOrder(order.id)"
+            >
+              Cancel Order
+            </button>
+            <button
+              v-if="order.status === 'pending'"
+              @click="confirmOrder(order.id)"
+            >
+              Confirm Order
+            </button>
+          </div>
         </li>
       </ul>
     </div>
@@ -107,7 +121,11 @@ export default {
     },
   },
   methods: {
-    ...mapActions("orders", ["fetchOrdersAction"]),
+    ...mapActions("orders", [
+      "fetchOrdersAction",
+      "cancelOrderAction",
+      "confirmOrderAction",
+    ]),
     ...mapActions("products", ["fetchProductsAction"]),
     async fetchData() {
       try {
@@ -167,6 +185,31 @@ export default {
       const minutes = String(timestamp.getMinutes()).padStart(2, "0");
 
       return `${day}/${month}/${year} ${hours}:${minutes}`;
+    },
+
+    async cancelOrder(id) {
+      const confirmed = confirm("Are you sure you want to cancel this order?");
+      if (confirmed) {
+        await this.cancelOrderAction(id);
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Order canceled succesfully");
+          this.fetchOrdersAction();
+        }
+      }
+    },
+    async confirmOrder(id) {
+      const confirmed = confirm("Are you sure you want to confirm this order?");
+      if (confirmed) {
+        await this.confirmOrderAction(id);
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("order confirmed successfully");
+          this.fetchOrdersAction();
+        }
+      }
     },
   },
   created() {
