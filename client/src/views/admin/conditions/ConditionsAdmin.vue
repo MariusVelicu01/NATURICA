@@ -88,18 +88,23 @@ export default {
 
     conditionsWithSymptoms() {
       if (!Array.isArray(this.allConditions)) return [];
-      return this.allConditions.filter(
-        (condition) =>
-          Array.isArray(condition.symptoms) && condition.symptoms.length > 0
-      );
+      return this.allConditions
+        .filter(
+          (condition) =>
+            Array.isArray(condition.symptoms) && condition.symptoms.length > 0
+        )
+        .sort((a, b) => a.name.localeCompare(b.name));
     },
 
     conditionsWithoutSymptoms() {
       if (!Array.isArray(this.allConditions)) return [];
-      return this.allConditions.filter(
-        (condition) =>
-          !Array.isArray(condition.symptoms) || condition.symptoms.length === 0
-      );
+      return this.allConditions
+        .filter(
+          (condition) =>
+            !Array.isArray(condition.symptoms) ||
+            condition.symptoms.length === 0
+        )
+        .sort((a, b) => a.name.localeCompare(b.name));
     },
   },
   methods: {
@@ -166,13 +171,10 @@ export default {
         if (this.getError) {
           alert(`Error: ${this.getError.message}`);
         } else {
+          window.location.reload();
           alert("Condition added successfully!");
-          this.cancelForm();
-          await this.fetchConditionsAction();
         }
       }
-
-      
     },
 
     async deleteCondition(id) {
@@ -207,6 +209,7 @@ export default {
         const response = await this.fetchConditionsFromAPIAction(
           this.apiContitionsCount
         );
+        window.location.reload();
         alert(`Added: ${response.added}, Skipped: ${response.skipped}`);
         this.fetchConditionsAction();
       } catch (error) {

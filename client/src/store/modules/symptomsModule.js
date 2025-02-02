@@ -134,7 +134,9 @@ const symptomsModule = {
     },
   },
   getters: {
-    allSymptoms: (state) => state.symptoms,
+    allSymptoms: (state) => {
+      return [...state.symptoms].sort((a, b) => a.name.localeCompare(b.name));
+    },
     getError: (state) => state.errorState,
   },
 };

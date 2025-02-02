@@ -57,6 +57,7 @@ export default {
       if (this.getError) {
         alert(`Error: ${this.getError.message}`);
       } else {
+        window.location.reload();
         alert("Symptom added successfully!");
       }
 

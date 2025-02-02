@@ -199,7 +199,7 @@ const conditionsModule = {
 
         commit("setConditions", [...conditions]);
 
-        return backendResponse;
+        return data;
       } catch (error) {
         console.error("Error in fetchConditionsFromAPIAction:", error);
         throw error;
