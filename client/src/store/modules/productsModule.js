@@ -168,7 +168,9 @@ const productsModule = {
     },
   },
   getters: {
-    allProducts: (state) => state.products,
+    allProducts: (state) => {
+      return [...state.products].sort((a, b) => a.name.localeCompare(b.name));
+    },
     productToView: (state) => state.product,
     getError: (state) => state.errorState,
   },

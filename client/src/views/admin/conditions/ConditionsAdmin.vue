@@ -4,10 +4,29 @@
 
     <button @click="openAddForm">Add Condition</button>
 
-    <label>Number of conditions to fetch:</label>
-    <input type="number" v-model="apiContitionsCount" min="0" max="20" />
+    <div>
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Search conditions..."
+      />
+    </div>
 
-    <button @click="fetchConditionsFromAPI">Fetch Conditions from API</button>
+    <div>
+      <label>Number of conditions to fetch (Min. 1 - Max. 20):</label>
+      <input type="number" v-model="apiContitionsCount" min="1" max="20" />
+
+      <button
+        v-if="this.loadingAPICondition === false"
+        @click="fetchConditionsFromAPI"
+      >
+        Fetch Conditions from API
+      </button>
+      <p v-if="this.loadingAPICondition === true">
+        Extracting {{ this.apiContitionsCount }} conditions from Clinical Table
+        Search Service API... Please Wait!
+      </p>
+    </div>
 
     <h2>Valid Conditions</h2>
     <ul v-if="conditionsWithSymptoms.length > 0">
@@ -18,7 +37,7 @@
         <button @click="deleteCondition(condition.id)">Delete</button>
       </li>
     </ul>
-    <p v-else>No confirmed conditions available.</p>
+    <p v-else>No valid conditions available.</p>
 
     <h2>Conditions Without Symptoms (Generated from API)</h2>
     <ul v-if="this.conditionsWithoutSymptoms.length > 0">
@@ -32,7 +51,7 @@
         <button @click="deleteCondition(condition.id)">Delete</button>
       </li>
     </ul>
-    <p v-else>All API conditions have been confirmed.</p>
+    <p v-else>No API conditions available.</p>
 
     <transition name="fade">
       <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
@@ -80,6 +99,8 @@ export default {
       },
       symptomsOptions: [],
       apiContitionsCount: 5,
+      searchQuery: "",
+      loadingAPICondition: false,
     };
   },
   computed: {
@@ -91,7 +112,12 @@ export default {
       return this.allConditions
         .filter(
           (condition) =>
-            Array.isArray(condition.symptoms) && condition.symptoms.length > 0
+            condition &&
+            Array.isArray(condition.symptoms) &&
+            condition.symptoms.length > 0 &&
+            condition.name
+              .toLowerCase()
+              .includes(this.searchQuery.toLowerCase())
         )
         .sort((a, b) => a.name.localeCompare(b.name));
     },
@@ -101,8 +127,12 @@ export default {
       return this.allConditions
         .filter(
           (condition) =>
-            !Array.isArray(condition.symptoms) ||
-            condition.symptoms.length === 0
+            condition &&
+            (!Array.isArray(condition.symptoms) ||
+              condition.symptoms.length === 0) &&
+            condition.name
+              .toLowerCase()
+              .includes(this.searchQuery.toLowerCase())
         )
         .sort((a, b) => a.name.localeCompare(b.name));
     },
@@ -205,16 +235,25 @@ export default {
     },
 
     async fetchConditionsFromAPI() {
+      this.loadingAPICondition = true;
       try {
         const response = await this.fetchConditionsFromAPIAction(
           this.apiContitionsCount
         );
         window.location.reload();
-        alert(`Added: ${response.added}, Skipped: ${response.skipped}`);
+        alert(
+          `Added: ${response.added} (${response.addedConditions.join(
+            ", "
+          )})\nSkipped: ${response.skipped} (${response.skippedConditions.join(
+            ", "
+          )})`
+        );
         this.fetchConditionsAction();
+        this.loadingAPICondition = false;
       } catch (error) {
         console.error("Error fetching conditions from API:", error);
         alert("Failed to fetch conditions.");
+        this.loadingAPICondition = false;
       }
     },
   },

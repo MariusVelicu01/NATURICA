@@ -194,7 +194,14 @@ const ordersModule = {
     },
   },
   getters: {
-    allOrders: (state) => state.orders,
+    allOrders: (state) => {
+      return [...state.orders].sort((a, b) => {
+        return (
+          new Date(b.createdAt._seconds * 1000) -
+          new Date(a.createdAt._seconds * 1000)
+        );
+      });
+    },
     orderToView: (state) => state.order,
     orderTotal: (state) =>
       state.order.productsOrdered.reduce(

@@ -7,14 +7,25 @@
       <button type="submit">Add Symptom</button>
     </form>
 
+    <input
+      v-model="searchQuery"
+      placeholder="Search symptoms..."
+      @input="filterSymptoms"
+    />
+
+    <div v-if="filteredSymptoms.length!==0">
     <ul>
-      <li v-for="symptom in allSymptoms" :key="symptom.id">
+      <li v-for="symptom in filteredSymptoms" :key="symptom.id">
         <span>{{ symptom.name }}</span>
         <span v-if="symptom.isUsed" class="hint"> - Linked to a condition</span>
         <button @click="editSymptom(symptom)">Edit</button>
         <button @click="deleteSymptom(symptom.id)">Delete</button>
       </li>
     </ul>
+    </div>
+    <div v-else>
+      No symptoms found...
+    </div>
 
     <div v-if="isEditing">
       <input v-model="editName" placeholder="Edit symptom name" />
@@ -34,10 +45,19 @@ export default {
       isEditing: false,
       editId: null,
       editName: "",
+      searchQuery: "",
     };
   },
   computed: {
     ...mapGetters("symptoms", ["allSymptoms", "getError"]),
+
+    filteredSymptoms() {
+      return this.allSymptoms.filter(
+        (symptom) =>
+          symptom.name &&
+          symptom.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+      );
+    },
   },
   methods: {
     ...mapActions("symptoms", [
@@ -90,12 +110,12 @@ export default {
       if (confirmed) {
         await this.deleteSymptomAction(id);
         if (this.getError) {
-        alert(`Error: ${this.getError.message}`);
-      } else {
-        alert("Symptom deleted successfully!");
-      }
+          alert(`Error: ${this.getError.message}`);
+        } else {
+          alert("Symptom deleted successfully!");
+        }
 
-      this.fetchSymptomsAction();
+        this.fetchSymptomsAction();
       }
     },
     cancelEdit() {

@@ -4,6 +4,14 @@
     <button @click="openAddForm">Add Product</button>
 
     <div>
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Search products..."
+      />
+    </div>
+
+    <div>
       <label for="symptoms-select">Filter by Symptoms:</label>
       <multiselect
         id="symptoms-select"
@@ -146,6 +154,7 @@ export default {
       selectedSymptomsFilter: [],
       selectedConditionsFilter: [],
       loading: true,
+      searchQuery: "",
     };
   },
   computed: {
@@ -204,14 +213,29 @@ export default {
         productsBySymptoms.length === 0 &&
         productsByConditions.length === 0
       ) {
-        return this.allProducts;
+        return this.allProducts.filter(
+          (product) =>
+            product &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
       } else if (productsBySymptoms.length === 0) {
-        return productsByConditions;
+        return productsByConditions.filter(
+          (product) =>
+            product &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
       } else if (productsByConditions.length === 0) {
-        return productsBySymptoms;
+        return productsBySymptoms.filter(
+          (product) =>
+            product &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
       } else
-        return productsBySymptoms.filter((product) =>
-          productsByConditions.includes(product)
+        return productsBySymptoms.filter(
+          (product) =>
+            product &&
+            productsByConditions.includes(product) &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
         );
     },
   },

@@ -145,10 +145,10 @@ const conditionsModule = {
         }
         return [...offsets];
       }
-
+    
       const offsets = getRandomOffsets(count);
       let conditions = [];
-
+    
       for (let offset of offsets) {
         try {
           const response = await fetch(
@@ -159,18 +159,15 @@ const conditionsModule = {
             conditions.push(result[3][0][0]);
           }
         } catch (error) {
-          console.error(
-            `Failed to fetch condition at offset ${offset}:`,
-            error
-          );
+          console.error(`Failed to fetch condition at offset ${offset}:`, error);
         }
       }
-
+    
       if (conditions.length === 0) {
         console.warn("No conditions retrieved from API.");
-        return { added: 0, skipped: count };
+        return { added: 0, skipped: count, addedConditions: [], skippedConditions: [] };
       }
-
+    
       try {
         const backendResponse = await fetch(
           "http://localhost:3000/conditions/add-from-api",
@@ -178,33 +175,31 @@ const conditionsModule = {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${decryptData(
-                localStorage.getItem("token")
-              )}`,
+              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
             },
             body: JSON.stringify({ conditions }),
           }
         );
-
+    
         const data = await backendResponse.json();
-
+    
         if (!backendResponse.ok) {
           commit("setError", {
             status: backendResponse.status,
             message: data.error,
           });
-
+    
           return;
         }
-
+    
         commit("setConditions", [...conditions]);
-
+    
         return data;
       } catch (error) {
         console.error("Error in fetchConditionsFromAPIAction:", error);
         throw error;
       }
-    },
+    }
   },
   getters: {
     allConditions: (state) => state.conditions,

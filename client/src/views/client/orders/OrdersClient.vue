@@ -4,19 +4,36 @@
 
     <h2>Orders List</h2>
 
+    <div class="order-filters">
+      <label>
+        <input type="radio" v-model="selectedStatus" value="pending" />
+        Pending
+      </label>
+      <label>
+        <input type="radio" v-model="selectedStatus" value="confirmed" />
+        Confirmed
+      </label>
+      <label>
+        <input type="radio" v-model="selectedStatus" value="canceled" />
+        Canceled
+      </label>
+    </div>
+
     <div>
       <div v-if="loading">Loading orders...</div>
       <ul v-else>
-        <li v-for="order in allOrders" :key="order.id">
+        <li v-for="order in filteredOrders" :key="order.id">
           <router-link :to="`/client/orders/${order.id}`">
-            <h2>{{ order.id }} - {{order.status}}</h2>
+            <h2>{{ order.id }} - {{ order.status }}</h2>
           </router-link>
           <div>
-            <p><strong>Created At:</strong> {{ formatDate(order.createdAt) }}</p>
+            <p>
+              <strong>Created At:</strong> {{ formatDate(order.createdAt) }}
+            </p>
             <p v-if="order.updatedAt && !order.canceledAt">
               <strong>Last Update:</strong> {{ formatDate(order.updatedAt) }}
             </p>
-             <p v-if="order.canceledAt">
+            <p v-if="order.canceledAt">
               <strong>Canceled At:</strong> {{ formatDate(order.canceledAt) }}
             </p>
             <strong>Products Ordered</strong>
@@ -43,10 +60,16 @@ export default {
   data() {
     return {
       loading: true,
+      selectedStatus: "pending",
     };
   },
   computed: {
     ...mapGetters("orders", ["allOrders"]),
+    filteredOrders() {
+      return this.allOrders.filter(
+        (order) => order.status === this.selectedStatus
+      );
+    },
   },
   methods: {
     ...mapActions("orders", ["fetchOrdersAction"]),

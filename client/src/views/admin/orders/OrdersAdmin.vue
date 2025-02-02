@@ -6,10 +6,25 @@
 
     <h2>Orders List</h2>
 
+    <div class="order-filters">
+      <label>
+        <input type="radio" v-model="selectedStatus" value="pending" />
+        Pending
+      </label>
+      <label>
+        <input type="radio" v-model="selectedStatus" value="confirmed" />
+        Confirmed
+      </label>
+      <label>
+        <input type="radio" v-model="selectedStatus" value="canceled" />
+        Canceled
+      </label>
+    </div>
+
     <div>
       <div v-if="loading">Loading orders...</div>
       <ul v-else>
-        <li v-for="order in allOrders" :key="order.id">
+        <li v-for="order in filteredOrders" :key="order.id">
           <router-link :to="`/admin/orders/${order.id}`">
             <h2>{{ order.id }} - {{ order.status }}</h2>
           </router-link>
@@ -50,8 +65,14 @@
 
           <h3>Top 5 Best-Selling Products</h3>
           <ul>
-            <li v-for="(product, index) in this.topSellingProducts" :key="index">
-              <router-link :to="`/admin/products/${product.id}`">{{ product.name }}</router-link> - Sold: {{ product.sales }}
+            <li
+              v-for="(product, index) in this.topSellingProducts"
+              :key="index"
+            >
+              <router-link :to="`/admin/products/${product.id}`">{{
+                product.name
+              }}</router-link>
+              - Sold: {{ product.sales }}
             </li>
           </ul>
 
@@ -73,11 +94,17 @@ export default {
       showStatisticsModal: false,
       totalRevenue: 0,
       topSellingProducts: [],
+      selectedStatus: "pending",
     };
   },
   computed: {
     ...mapGetters("orders", ["allOrders"]),
     ...mapGetters("products", ["allProducts"]),
+    filteredOrders() {
+      return this.allOrders.filter(
+        (order) => order.status === this.selectedStatus
+      );
+    },
   },
   methods: {
     ...mapActions("orders", ["fetchOrdersAction"]),
@@ -103,7 +130,9 @@ export default {
       }
 
       this.totalRevenue = this.allOrders
-        .filter((order) => order.status === "confirmed" || order.status === "pending")
+        .filter(
+          (order) => order.status === "confirmed" || order.status === "pending"
+        )
         .reduce((sum, order) => sum + (order.totalValue || 0), 0);
 
       if (!this.allProducts || !Array.isArray(this.allProducts)) {

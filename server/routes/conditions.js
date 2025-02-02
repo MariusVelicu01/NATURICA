@@ -119,18 +119,30 @@ router.post("/add-from-api", checkRole("admin"), async (req, res) => {
 
     let addedCount = 0;
     let skippedCount = 0;
+    let addedConditions = [];
+    let skippedConditions = [];
 
     for (const condition of conditions) {
-      if (existingNames.has(condition.toLowerCase().trim())) {
-        skippedCount++; 
+      const conditionName = condition.toLowerCase().trim();
+
+      if (existingNames.has(conditionName)) {
+        skippedCount++;
+        skippedConditions.push(condition);
       } else {
         await addDocument("conditions", { name: condition, symptoms: [] });
         addedCount++;
-        existingNames.add(condition.toLowerCase().trim());
+        addedConditions.push(condition); 
+        existingNames.add(conditionName);
       }
     }
 
-    return res.status(201).json({ added: addedCount, skipped: skippedCount });
+    return res.status(201).json({
+      added: addedCount,
+      skipped: skippedCount,
+      addedConditions,
+      skippedConditions
+    });
+
   } catch (err) {
     console.error("Error adding conditions from API:", err.message);
     res.status(500).json({ error: "Failed to add conditions from API." });

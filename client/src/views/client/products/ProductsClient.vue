@@ -3,6 +3,14 @@
     <h1>Products</h1>
 
     <div>
+      <input
+        type="text"
+        v-model="searchQuery"
+        placeholder="Search products..."
+      />
+    </div>
+
+    <div>
       <label for="symptoms-select">Filter by Symptoms:</label>
       <multiselect
         id="symptoms-select"
@@ -45,18 +53,15 @@
           style="max-width: 200px; display: block; margin-bottom: 10px"
         />
         <div>
-          <button 
-            v-if="product.stock > 0" 
-            @click="addToCart(product)">
+          <button v-if="product.stock > 0" @click="addToCart(product)">
             Add to Cart
           </button>
-          <span v-else style="color: red; font-weight: bold;">OUT OF STOCK</span>
+          <span v-else style="color: red; font-weight: bold">OUT OF STOCK</span>
         </div>
       </li>
     </ul>
   </div>
 </template>
-
 
 <script>
 import Multiselect from "vue-multiselect";
@@ -69,6 +74,7 @@ export default {
       loading: true,
       selectedSymptoms: [],
       selectedConditions: [],
+      searchQuery: "",
     };
   },
   computed: {
@@ -113,19 +119,30 @@ export default {
         productsBySymptoms.length === 0 &&
         productsByConditions.length === 0
       ) {
-        return this.allProducts;
-      }
-
-      if (productsBySymptoms.length === 0) {
-        return productsByConditions;
-      }
-      if (productsByConditions.length === 0) {
-        return productsBySymptoms;
-      }
-
-      return productsBySymptoms.filter((product) =>
-        productsByConditions.includes(product)
-      );
+        return this.allProducts.filter(
+          (product) =>
+            product &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      } else if (productsBySymptoms.length === 0) {
+        return productsByConditions.filter(
+          (product) =>
+            product &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      } else if (productsByConditions.length === 0) {
+        return productsBySymptoms.filter(
+          (product) =>
+            product &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
+      } else
+        return productsBySymptoms.filter(
+          (product) =>
+            product &&
+            productsByConditions.includes(product) &&
+            product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
+        );
     },
   },
   methods: {
@@ -169,16 +186,15 @@ export default {
       }
     },
 
-addToCart(product) {
-  if (!product.stock || product.stock < 1) {
-    alert("This product is out of stock.");
-    return;
-  }
+    addToCart(product) {
+      if (!product.stock || product.stock < 1) {
+        alert("This product is out of stock.");
+        return;
+      }
 
-  this.addToCartAction({ product, quantity: 1 });
-  alert(`${product.name} added to cart!`);
-},
-
+      this.addToCartAction({ product, quantity: 1 });
+      alert(`${product.name} added to cart!`);
+    },
   },
 
   created() {
