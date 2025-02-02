@@ -1,12 +1,12 @@
 <template>
-  <div>
-    <div v-if="isLoading">
-      <h1>Processing your order...</h1>
+  <div class="order-confirmation-container">
+    <div v-if="isLoading" class="loading-message">
+      <h1 class="title">Processing your order...</h1>
     </div>
-    <div v-else>
-      <h1>Order Confirmation</h1>
+    <div v-else class="confirmation-message">
+      <h1 class="title">Order Confirmation</h1>
       <p>Thank you for your order!</p>
-      <router-link to="/client/orders">View Orders</router-link>
+      <router-link to="/client/orders" class="btn-view-orders">View Orders</router-link>
     </div>
   </div>
 </template>
@@ -62,3 +62,51 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.order-confirmation-container {
+  font-family: "Arial", sans-serif;
+  background: #f8f8f5;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 10px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.title {
+  color: #3e7042;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.loading-message {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.confirmation-message {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.btn-view-orders {
+  display: inline-block;
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: #4a7c59;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+.btn-view-orders:hover {
+  background: #3e7042;
+}
+</style>

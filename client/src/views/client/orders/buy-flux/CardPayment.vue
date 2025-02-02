@@ -1,32 +1,40 @@
 <template>
-  <div>
-    <h1>Card Payment</h1>
-    <form @submit.prevent="processPayment">
+  <div class="card-payment-container">
+    <h1 class="title">Card Payment</h1>
+    <form @submit.prevent="processPayment" class="payment-form">
       <input
         v-model="cardNumber"
         maxlength="16"
         placeholder="Card Number (16 digits)"
         required
+        class="input-field"
       />
-      <input
-        v-model="expiryMonth"
-        maxlength="2"
-        placeholder="MM"
-        required
-      />
-      <input
-        v-model="expiryYear"
-        maxlength="2"
-        placeholder="YY"
-        required
-      />
+      <div class="expiry-fields">
+        <input
+          v-model="expiryMonth"
+          maxlength="2"
+          placeholder="MM"
+          required
+          class="input-field expiry-input"
+        />
+        <input
+          v-model="expiryYear"
+          maxlength="2"
+          placeholder="YY"
+          required
+          class="input-field expiry-input"
+        />
+      </div>
       <input
         v-model="cvv"
         maxlength="3"
         placeholder="CVV"
         required
+        class="input-field"
       />
-      <button type="submit">Pay ${{ cartTotal.toFixed(2) }}</button>
+      <button type="submit" class="btn-pay">
+        Pay ${{ cartTotal.toFixed(2) }}
+      </button>
     </form>
   </div>
 </template>
@@ -75,3 +83,62 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.card-payment-container {
+  font-family: "Arial", sans-serif;
+  background: #f8f8f5;
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 10px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.title {
+  color: #3e7042;
+  font-size: 24px;
+  margin-bottom: 15px;
+}
+
+.payment-form {
+  background: white;
+  padding: 15px;
+  border-radius: 5px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.input-field {
+  width: 95%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #aac29b;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.expiry-fields {
+  display: flex;
+  justify-content: space-between;
+}
+
+.expiry-input {
+  width: 48%;
+}
+
+.btn-pay {
+  background: #27ae60;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-pay:hover {
+  background: #1e8449;
+}
+</style>
