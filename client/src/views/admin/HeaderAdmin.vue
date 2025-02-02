@@ -126,7 +126,7 @@ export default {
 @media (max-width: 700px) {
   .admin-container {
     background-color: #4a7c59;
-    height: 100px;
+    height: 70px;
     padding: 30 0;
     font-family: "Poppins", sans-serif;
   }

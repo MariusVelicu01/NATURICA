@@ -30,7 +30,6 @@
   </div>
 </template>
 
-
 <script>
 import { mapActions, mapGetters } from "vuex";
 
@@ -71,7 +70,7 @@ export default {
 
 <style scoped>
 .client-container {
-  background-color: #4a7c59;
+  background-color: #f7f3e9;
   height: 70px;
   font-family: "Poppins", sans-serif;
 }
@@ -104,7 +103,6 @@ export default {
   font-weight: bold;
   text-decoration: none;
   border-radius: 5px;
-  padding: 10px 15px;
 }
 
 .client-header nav ul li a:hover {
@@ -143,6 +141,13 @@ export default {
 }
 
 @media (max-width: 700px) {
+  .client-container {
+    background-color: #4a7c59;
+    height: 70px;
+    padding: 30 0;
+    font-family: "Poppins", sans-serif;
+  }
+
   .menu-btn {
     display: block;
   }
@@ -174,4 +179,3 @@ export default {
   }
 }
 </style>
-
