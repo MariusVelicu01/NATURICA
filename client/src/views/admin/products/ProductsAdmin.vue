@@ -1,18 +1,19 @@
 <template>
-  <div>
-    <h1>Manage Products</h1>
-    <button @click="openAddForm">Add Product</button>
+  <div class="products-container">
+    <h1 class="title">Manage Products</h1>
 
-    <div>
-      <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="Search products..."
-      />
-    </div>
+    <button @click="openAddForm" class="btn-primary">Add Product</button>
+    <input
+      type="text"
+      v-model="searchQuery"
+      placeholder="Search products..."
+      class="input-search"
+    />
 
-    <div>
-      <label for="symptoms-select">Filter by Symptoms:</label>
+    <div class="filters">
+      <label for="symptoms-select" class="filter-label"
+        >Filter by Symptoms:</label
+      >
       <multiselect
         id="symptoms-select"
         v-model="selectedSymptomsFilter"
@@ -22,9 +23,12 @@
         placeholder="Select symptoms"
         label="label"
         track-by="value"
+        class="multiselect"
       />
 
-      <label for="conditions-select">Filter by Conditions:</label>
+      <label for="conditions-select" class="filter-label"
+        >Filter by Conditions:</label
+      >
       <multiselect
         id="conditions-select"
         v-model="selectedConditionsFilter"
@@ -34,98 +38,136 @@
         placeholder="Select conditions"
         label="label"
         track-by="value"
+        class="multiselect"
       />
     </div>
 
-    <div v-if="filteredProducts.length === 0">
+    <div class="stock-filter">
+      <label class="switch">
+        <input type="checkbox" v-model="showOutOfStockOnly" />
+        <span class="slider"></span>
+      </label>
+      <span>Show Products Out of Stock</span>
+    </div>
+
+    <div v-if="filteredProducts.length === 0" class="no-results">
       No products match your criteria.
     </div>
-    <div v-else-if="this.loading">Loading products...</div>
-    <ul v-else>
-      <li v-for="product in filteredProducts" :key="product.id">
-        <router-link :to="`/admin/products/${product.id}`">
+
+    <div v-else-if="loading" class="loading-message">Loading products...</div>
+
+    <ul v-else class="products-list">
+      <li
+        v-for="product in filteredProducts"
+        :key="product.id"
+        class="product-item"
+      >
+        <router-link
+          :to="`/admin/products/${product.id}`"
+          class="product-title"
+        >
           <h2>{{ product.name }}</h2>
         </router-link>
-        <p>Price: ${{ product.price }}</p>
         <img
           v-if="product.imgSrc"
           :src="product.imgSrc"
           alt="Product Image"
-          style="max-width: 200px; display: block; margin-bottom: 10px"
+          class="product-image"
         />
-        <button @click="openEditForm(product)">Update</button>
-        <button @click="deleteProduct(product.id)">Delete</button>
+        <p class="product-price">Price: {{ product.price }} $</p>
+        <p v-if="product.stock === 0" id="out-of-stock">OUT OF STOCK</p>
+        <div class="product-actions">
+          <button @click="openEditForm(product)" class="btn-edit">
+            Update
+          </button>
+          <button @click="deleteProduct(product.id)" class="btn-delete">
+            Delete
+          </button>
+        </div>
       </li>
     </ul>
 
-    <div v-if="showForm">
-      <transition name="fade">
-        <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
-          <div class="modal-content">
-            <h2>{{ isEditing ? "Update Product" : "Add Product" }}</h2>
+    <transition name="fade">
+      <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
+        <div class="modal-content">
+          <h2>{{ isEditing ? "Update Product" : "Add Product" }}</h2>
+          <form @submit.prevent="submitForm">
+            <input
+              v-model="form.name"
+              placeholder="Product Name"
+              required
+              class="input-field"
+            />
+            <textarea
+              v-model="form.productDetails"
+              placeholder="Details"
+              required
+              class="textarea-field"
+            ></textarea>
+            <multiselect
+              v-model="selectedConditions"
+              :options="conditionsOptions"
+              :multiple="true"
+              :searchable="true"
+              placeholder="Select conditions"
+              label="label"
+              track-by="value"
+              class="multiselect"
+            />
+            <div v-if="symptomsTreated.length > 0">
+              <h3>Symptoms Treated:</h3>
+              <ul class="symptoms-list">
+                <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
+                  {{ symptom.name }}
+                </li>
+              </ul>
+            </div>
+            <input
+              v-model="form.price"
+              type="number"
+              placeholder="Price"
+              required
+              class="input-field"
+            />
+            <input
+              v-model="form.stock"
+              type="number"
+              placeholder="Stock"
+              required
+              class="input-field"
+            />
 
-            <form @submit.prevent="submitForm">
-              <input v-model="form.name" placeholder="Product Name" required />
-              <textarea
-                v-model="form.productDetails"
-                placeholder="Details"
-                required
+            <div v-if="form.imgSrc">
+              <label>Current Image:</label>
+              <img
+                :src="form.imgSrc"
+                alt="Product Image"
+                class="product-image-preview"
               />
-              <multiselect
-                v-model="selectedConditions"
-                :options="conditionsOptions"
-                :multiple="true"
-                :searchable="true"
-                placeholder="Select conditions"
-                label="label"
-                track-by="value"
-              />
-              <div v-if="symptomsTreated.length > 0">
-                <h3>Symptoms Treated:</h3>
-                <ul>
-                  <li
-                    v-for="symptom in currentSymptomsTreated"
-                    :key="symptom.id"
-                  >
-                    {{ symptom.name }}
-                  </li>
-                </ul>
-              </div>
-              <input
-                v-model="form.price"
-                type="number"
-                placeholder="Price"
-                required
-              />
-              <input
-                v-model="form.stock"
-                type="number"
-                placeholder="Stock"
-                required
-              />
-              <div v-if="form.imgSrc">
-                <label>Current Image:</label>
-                <img
-                  :src="form.imgSrc"
-                  alt="Product Image"
-                  style="max-width: 200px; display: block; margin-bottom: 10px"
-                />
-                <span>File Name: {{ extractFileName(form.imgSrc) }}</span>
-              </div>
+              <div>File Name: {{ extractFileName(form.imgSrc) }}</div>
+            </div>
 
+            <div>
               <label>Upload New Image:</label>
               <input
                 type="file"
                 @change="handleFileChange"
                 accept="image/png, image/jpeg"
+                class="input-file"
               />
-              <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
-              <button type="button" @click="cancelForm">Cancel</button>
-            </form>
-          </div>
+            </div>
+            <div>
+              <button type="submit" class="btn-primary">
+                {{ isEditing ? "Update" : "Add" }}
+              </button>
+              <button type="button" @click="cancelForm" class="btn-secondary">
+                Cancel
+              </button>
+            </div>
+          </form>
         </div>
-      </transition>
-    </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -155,6 +197,7 @@ export default {
       selectedConditionsFilter: [],
       loading: true,
       searchQuery: "",
+      showOutOfStockOnly: false,
     };
   },
   computed: {
@@ -206,14 +249,22 @@ export default {
     },
 
     filteredProducts() {
-      const productsBySymptoms = this.filterBySymptoms();
-      const productsByConditions = this.filterByConditions();
+      let productsBySymptoms = this.filterBySymptoms();
+      let productsByConditions = this.filterByConditions();
+
+      let products = this.allProducts;
+
+      if (this.showOutOfStockOnly) {
+        products = products.filter((product) => product.stock === 0);
+        productsBySymptoms = productsBySymptoms.filter((product) => product.stock === 0);
+        productsByConditions = products.filter((product) => product.stock === 0);
+      }
 
       if (
         productsBySymptoms.length === 0 &&
         productsByConditions.length === 0
       ) {
-        return this.allProducts.filter(
+        return products.filter(
           (product) =>
             product &&
             product.name.toLowerCase().includes(this.searchQuery.toLowerCase())
@@ -426,8 +477,154 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 @import "vue-multiselect/dist/vue-multiselect.min.css";
+.products-container {
+  font-family: "Arial", sans-serif;
+  background: #f8f8f5;
+  padding: 20px;
+  max-width: 1500px;
+  margin: auto;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.title {
+  color: #3e7042;
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.input-search {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #aac29b;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.filters {
+  background: #eef0eb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+.multiselect {
+  width: 100%;
+  margin-top: 5px;
+}
+
+.input-field,
+.textarea-field {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #aac29b;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.input-file {
+  margin-top: 10px;
+}
+
+.textarea-field {
+  height: 80px;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-edit,
+.btn-delete {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 3px;
+}
+
+.btn-primary {
+  background: #4a7c59;
+  color: white;
+}
+.btn-primary:hover {
+  background: #3e7042;
+}
+
+.btn-secondary {
+  background: #e4b363;
+  color: white;
+}
+.btn-secondary:hover {
+  background: #d9a14a;
+}
+
+.btn-edit {
+  background: #f1c40f;
+  color: white;
+}
+.btn-edit:hover {
+  background: #d9a14a;
+}
+
+.btn-delete {
+  background: #e74c3c;
+  color: white;
+}
+.btn-delete:hover {
+  background: #c0392b;
+}
+
+.products-list {
+  list-style: none;
+  padding: 0;
+}
+
+.product-item {
+  background: white;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.product-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #3e7042;
+  text-decoration: none;
+}
+
+.product-price {
+  font-size: 16px;
+  color: #4a7c59;
+}
+
+.product-image {
+  max-width: 200px;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.product-actions {
+  display: flex;
+  justify-content: center;
+}
+
+#out-of-stock {
+  color: red;
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -448,14 +645,26 @@ export default {
   max-height: 80vh;
   overflow-y: auto;
   width: 500px;
+  text-align: center;
 }
 
 .fade-enter-active,
 .fade-leave-active {
   transition: opacity 0.3s;
 }
+
 .fade-enter,
 .fade-leave-to {
   opacity: 0;
+}
+
+@media (max-width: 500px) {
+  .input-search {
+    width: 100%;
+  }
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
 }
 </style>

@@ -1,10 +1,10 @@
 <template>
-  <div>
-    <h1>Manage Orders</h1>
+  <div class="orders-container">
+    <h1 class="title">Manage Orders</h1>
 
-    <button @click="showStatisticsModal = true">Statistics</button>
+    <button class="btn-statistics" @click="showStatisticsModal = true">Statistics</button>
 
-    <h2>Orders List</h2>
+    <h2 class="subtitle">Orders List</h2>
 
     <div class="order-filters">
       <label>
@@ -22,43 +22,31 @@
     </div>
 
     <div>
-      <div v-if="loading">Loading orders...</div>
-      <ul v-else>
-        <li v-for="order in filteredOrders" :key="order.id">
-          <router-link :to="`/admin/orders/${order.id}`">
+      <div v-if="loading" class="loading-message">Loading orders...</div>
+      <ul v-else class="order-list">
+        <li v-for="order in filteredOrders" :key="order.id" class="order-item">
+          <router-link :to="`/admin/orders/${order.id}`" class="order-link">
             <h2>{{ order.id }} - {{ order.status }}</h2>
           </router-link>
-          <div>
-            <p>
-              <strong>Created At:</strong> {{ formatDate(order.createdAt) }}
-            </p>
-            <p v-if="order.updatedAt && !order.canceledAt">
-              <strong>Last Update:</strong> {{ formatDate(order.updatedAt) }}
-            </p>
-            <p v-if="order.canceledAt">
-              <strong>Canceled At:</strong> {{ formatDate(order.canceledAt) }}
-            </p>
+          <div class="order-details">
+            <p><strong>Created At:</strong> {{ formatDate(order.createdAt) }}</p>
+            <p v-if="order.updatedAt && !order.canceledAt && !order.confirmedAt"><strong>Last Update:</strong> {{ formatDate(order.updatedAt) }}</p>
+            <p v-if="order.canceledAt"><strong>Canceled At:</strong> {{ formatDate(order.canceledAt) }}</p>
+            <p v-if="order.confirmedAt"><strong>Confirmed At:</strong> {{ formatDate(order.confirmedAt) }}</p>
             <strong>Products Ordered</strong>
-            <li
-              v-for="productOrdered in order.productsOrdered"
-              :key="productOrdered.productId"
-            >
-              <router-link :to="`/admin/products/${productOrdered.productId}`">
-                {{ productOrdered.name }}
-              </router-link>
-            </li>
+            <ul>
+              <li v-for="productOrdered in order.productsOrdered" :key="productOrdered.productId">
+                <router-link class="products-ordered-list" :to="`/admin/products/${productOrdered.productId}`">
+                  {{ productOrdered.name }}
+                </router-link>
+              </li>
+            </ul>
           </div>
-          <div>
-            <button
-              v-if="order.status === 'pending'"
-              @click="cancelOrder(order.id)"
-            >
+          <div class="order-actions">
+            <button v-if="order.status === 'pending'" @click="cancelOrder(order.id)" class="btn-cancel">
               Cancel Order
             </button>
-            <button
-              v-if="order.status === 'pending'"
-              @click="confirmOrder(order.id)"
-            >
+            <button v-if="order.status === 'pending'" @click="confirmOrder(order.id)" class="btn-confirm">
               Confirm Order
             </button>
           </div>
@@ -67,30 +55,20 @@
     </div>
 
     <transition name="fade">
-      <div
-        v-if="showStatisticsModal"
-        class="modal-overlay"
-        @click.self="closeModal"
-      >
+      <div v-if="showStatisticsModal" class="modal-overlay" @click.self="closeModal">
         <div class="modal-content">
           <h2>Order Statistics</h2>
-
           <p><strong>Total Revenue:</strong> ${{ totalRevenue }}</p>
 
           <h3>Top 5 Best-Selling Products</h3>
           <ul>
-            <li
-              v-for="(product, index) in this.topSellingProducts"
-              :key="index"
-            >
-              <router-link :to="`/admin/products/${product.id}`">{{
-                product.name
-              }}</router-link>
+            <li v-for="(product, index) in this.topSellingProducts" :key="index">
+              <router-link class="top-five-products" :to="`/admin/products/${product.id}`">{{ product.name }}</router-link>
               - Sold: {{ product.sales }}
             </li>
           </ul>
 
-          <button @click="closeModal">Close</button>
+          <button class="btn-close" @click="closeModal">Close</button>
         </div>
       </div>
     </transition>
@@ -206,7 +184,7 @@ export default {
         if (this.getError) {
           alert(`Error: ${this.getError.message}`);
         } else {
-          alert("order confirmed successfully");
+          alert("Order confirmed successfully");
           this.fetchOrdersAction();
         }
       }
@@ -217,3 +195,183 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.orders-container {
+  font-family: "Arial", sans-serif;
+  background: #f8f8f5;
+  padding: 20px;
+  max-width: 1500px;
+  margin: auto;
+  border-radius: 10px;
+  margin-top: 30px;
+}
+
+.title {
+  color: #3e7042;
+  font-size: 24px;
+  text-align: center;
+}
+
+.subtitle {
+  font-size: 18px;
+  color: #3e7042;
+  margin-bottom: 10px;
+}
+
+.order-filters {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin: 15px 0;
+}
+
+.order-filters label {
+  font-size: 14px;
+  cursor: pointer;
+  color: #4a7c59;
+}
+
+.order-list {
+  list-style: none;
+  padding: 0;
+}
+
+.order-item {
+  background: #ffffff;
+  padding: 15px;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.order-link {
+  font-size: 16px;
+  color: #2d5a3a;
+  text-decoration: none;
+}
+
+.order-link:hover {
+  text-decoration: underline;
+}
+
+.order-details {
+  font-size: 14px;
+  color: #555;
+}
+
+.order-details strong {
+  color: #2d5a3a;
+}
+
+.order-actions {
+  margin-top: 10px;
+}
+
+.products-ordered-list{
+  color: #2d5a3a;
+  text-decoration: none;
+  padding-top: 5px;
+}
+
+.products-ordered-list:hover{
+  text-decoration: underline;
+}
+
+.top-five-products{
+  color: #2d5a3a;
+  text-decoration: none;
+  padding-top: 5px;
+}
+
+.top-five-products:hover{
+  text-decoration: underline;
+}
+
+.btn-cancel, .btn-confirm, .btn-statistics, .btn-close {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 3px;
+}
+
+.btn-statistics {
+  background: #4a7c59;
+  color: white;
+}
+
+.btn-statistics:hover {
+  background: #3e7042;
+}
+
+.btn-cancel {
+  background: #e74c3c;
+  color: white;
+}
+
+.btn-cancel:hover {
+  background: #c0392b;
+}
+
+.btn-confirm {
+  background: #27ae60;
+  color: white;
+}
+
+.btn-confirm:hover {
+  background: #1e8449;
+}
+
+.btn-close {
+  background: #e4b363;
+  color: white;
+}
+
+.btn-close:hover {
+  background: #d9a14a;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  max-height: 80vh;
+  overflow-y: auto;
+  width: 500px;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+@media (max-width: 500px) {
+  .order-filters {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .btn-cancel, .btn-confirm, .btn-statistics {
+    width: 100%;
+  }
+}
+</style>

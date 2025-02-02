@@ -1,109 +1,82 @@
 <template>
-  <div>
+  <div class="product-container">
     <div v-if="product">
-      <button @click="openEditForm(product)">Update</button>
-      <button @click="deleteProduct(product.id)">Delete</button>
+      <div class="product-actions">
+        <button @click="openEditForm(product)" class="btn-edit">Update</button>
+        <button @click="deleteProduct(product.id)" class="btn-delete">Delete</button>
+      </div>
 
-      <h1>{{ product.name }}</h1>
-      <img
-        v-if="product.imgSrc"
-        :src="product.imgSrc"
-        alt="Product Image"
-        style="max-width: 300px; display: block; margin-bottom: 20px"
-      />
-      <p><strong>Price:</strong> ${{ product.price }}</p>
+      <h1 class="product-title">{{ product.name }}</h1>
+
+      <img v-if="product.imgSrc" :src="product.imgSrc" alt="Product Image" class="product-image" />
+
+      <p><strong>Price:</strong> {{ product.price }} $</p>
       <p><strong>Details:</strong> {{ product.productDetails }}</p>
       <p><strong>Stock:</strong> {{ product.stock }}</p>
-      <p><strong>Conditions Treated:</strong></p>
-      <ul>
-        <li v-for="condition in product.conditionsTreated" :key="condition.id">
-          {{ condition.name }}
-        </li>
-      </ul>
-      <p><strong>Symptoms Treated:</strong></p>
-      <ul>
-        <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
-          {{ symptom.name }}
-        </li>
-      </ul>
-      <p>
-        <strong>Product Statistics:</strong> {{ product.productStatistics }}
-      </p>
+      <p><strong>Sold Stock:</strong> {{ product.productStatistics }}</p>
+
+      <div class="conditions-section">
+        <h3>Conditions Treated:</h3>
+        <ul>
+          <li v-for="condition in product.conditionsTreated" :key="condition.id">
+            {{ condition.name }}
+          </li>
+        </ul>
+      </div>
+
+      <div class="symptoms-section">
+        <h3>Symptoms Treated:</h3>
+        <ul>
+          <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
+            {{ symptom.name }}
+          </li>
+        </ul>
+      </div>
+
     </div>
-    <div v-else>
+    <div v-else class="loading-message">
       <p>Loading product details...</p>
     </div>
 
-    <div v-if="showForm">
-      <transition name="fade">
-        <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
-          <div class="modal-content">
-            <h2>{{ isEditing ? "Update Product" : "Add Product" }}</h2>
+    <transition name="fade">
+      <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
+        <div class="modal-content">
+          <h2>{{ isEditing ? "Update Product" : "Add Product" }}</h2>
 
-            <form @submit.prevent="submitForm">
-              <input v-model="form.name" placeholder="Product Name" required />
-              <textarea
-                v-model="form.productDetails"
-                placeholder="Details"
-                required
-              />
-              <multiselect
-                v-model="selectedConditions"
-                :options="conditionsOptions"
-                :multiple="true"
-                :searchable="true"
-                placeholder="Select conditions"
-                label="label"
-                track-by="value"
-              />
-              <div v-if="symptomsTreated.length > 0">
-                <h3>Symptoms Treated:</h3>
-                <ul>
-                  <li
-                    v-for="symptom in currentSymptomsTreated"
-                    :key="symptom.id"
-                  >
-                    {{ symptom.name }}
-                  </li>
-                </ul>
-              </div>
-              <input
-                v-model="form.price"
-                type="number"
-                placeholder="Price"
-                required
-              />
-              <input
-                v-model="form.stock"
-                type="number"
-                placeholder="Stock"
-                required
-              />
-              <div v-if="form.imgSrc">
-                <label>Current Image:</label>
-                <img
-                  :src="form.imgSrc"
-                  alt="Product Image"
-                  style="max-width: 200px; display: block; margin-bottom: 10px"
-                />
-                <span>File Name: {{ extractFileName(form.imgSrc) }}</span>
-              </div>
+          <form @submit.prevent="submitForm">
+            <input v-model="form.name" placeholder="Product Name" required class="input-field" />
+            <textarea v-model="form.productDetails" placeholder="Details" required class="textarea-field"></textarea>
+            <multiselect v-model="selectedConditions" :options="conditionsOptions"
+              :multiple="true" :searchable="true"
+              placeholder="Select conditions" label="label"
+              track-by="value" class="multiselect"
+            />
+            <div v-if="symptomsTreated.length > 0">
+              <h3>Symptoms Treated:</h3>
+              <ul class="symptoms-list">
+                <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">{{ symptom.name }}</li>
+              </ul>
+            </div>
+            <input v-model="form.price" type="number" placeholder="Price" required class="input-field" />
+            <input v-model="form.stock" type="number" placeholder="Stock" required class="input-field" />
 
-              <label>Upload New Image:</label>
-              <input
-                type="file"
-                @change="handleFileChange"
-                accept="image/png, image/jpeg"
-              />
-              <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
-              <button type="button" @click="cancelForm">Cancel</button>
-            </form>
-          </div>
+            <div v-if="form.imgSrc">
+              <label>Current Image:</label>
+              <img :src="form.imgSrc" alt="Product Image" class="product-image-preview" />
+              <span>File Name: {{ extractFileName(form.imgSrc) }}</span>
+            </div>
+
+            <label>Upload New Image:</label>
+            <input type="file" @change="handleFileChange" accept="image/png, image/jpeg" class="input-file" />
+            <button type="submit" class="btn-primary">{{ isEditing ? "Update" : "Add" }}</button>
+            <button type="button" @click="cancelForm" class="btn-secondary">Cancel</button>
+          </form>
         </div>
-      </transition>
-    </div>
+      </div>
+    </transition>
   </div>
 </template>
+
 
 <script>
 import Multiselect from "vue-multiselect";
@@ -302,36 +275,90 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 @import "vue-multiselect/dist/vue-multiselect.min.css";
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
-
-.modal-content {
-  background-color: #fff;
+.product-container {
+  font-family: "Arial", sans-serif;
+  background: #f8f8f5;
   padding: 20px;
-  border-radius: 5px;
-  max-height: 80vh;
-  overflow-y: auto;
-  width: 500px;
+  max-width: 600px;
+  margin: auto;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 30px;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
+.product-title {
+  color: #3e7042;
+  font-size: 22px;
+  margin-bottom: 15px;
 }
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
+
+.product-image {
+  max-width: 250px;
+  border-radius: 10px;
+  margin: 10px 0;
+}
+
+.product-image-preview {
+  max-width: 150px;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.btn-primary, .btn-secondary, .btn-edit, .btn-delete {
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 3px;
+}
+
+.btn-primary { background: #4a7c59; color: white; }
+.btn-primary:hover { background: #3e7042; }
+
+.btn-secondary { background: #e4b363; color: white; }
+.btn-secondary:hover { background: #d9a14a; }
+
+.btn-edit { background: #f1c40f; color: white; }
+.btn-edit:hover { background: #d9a14a; }
+
+.btn-delete { background: #e74c3c; color: white; }
+.btn-delete:hover { background: #c0392b; }
+
+.conditions-section, .symptoms-section {
+  text-align: left;
+  margin: 15px 0;
+}
+
+.conditions-section h3, .symptoms-section h3 {
+  color: #4a7c59;
+  font-size: 18px;
+}
+
+.input-field, .textarea-field {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #aac29b;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+.input-file {
+  margin-top: 10px;
+}
+
+.textarea-field {
+  height: 80px;
+}
+
+@media (max-width: 500px) {
+  .input-search {
+    width: 100%;
+  }
+  .btn-primary, .btn-secondary {
+    width: 100%;
+  }
 }
 </style>

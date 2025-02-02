@@ -1,57 +1,88 @@
 <template>
-  <div>
-    <h1>Manage Conditions</h1>
+  <div class="conditions-container">
+    <h1 class="title">Manage Conditions</h1>
 
-    <button @click="openAddForm">Add Condition</button>
+    <button @click="openAddForm" class="btn-primary">Add Condition</button>
 
-    <div>
+    <input
+      type="text"
+      v-model="searchQuery"
+      placeholder="Search conditions..."
+      class="input-search"
+    />
+
+    <div class="fetch-container">
+      <label class="label"
+        >Number of conditions to fetch (Min. 1 - Max. 20):</label
+      >
       <input
-        type="text"
-        v-model="searchQuery"
-        placeholder="Search conditions..."
+        type="number"
+        v-model="apiContitionsCount"
+        min="1"
+        max="20"
+        class="input-number"
       />
-    </div>
-
-    <div>
-      <label>Number of conditions to fetch (Min. 1 - Max. 20):</label>
-      <input type="number" v-model="apiContitionsCount" min="1" max="20" />
 
       <button
-        v-if="this.loadingAPICondition === false"
+        v-if="!loadingAPICondition"
         @click="fetchConditionsFromAPI"
+        class="btn-fetch"
       >
         Fetch Conditions from API
       </button>
-      <p v-if="this.loadingAPICondition === true">
-        Extracting {{ this.apiContitionsCount }} conditions from Clinical Table
-        Search Service API... Please Wait!
+
+      <p v-if="loadingAPICondition" class="loading-message">
+        Extracting {{ apiContitionsCount }} conditions... Please Wait!
       </p>
     </div>
 
-    <h2>Valid Conditions</h2>
-    <ul v-if="conditionsWithSymptoms.length > 0">
-      <li v-for="condition in this.conditionsWithSymptoms" :key="condition.id">
-        <span>{{ condition.name }}</span>
-        <span v-if="condition.isUsed" class="hint"> - Linked to a product</span>
-        <button @click="editCondition(condition)">Update</button>
-        <button @click="deleteCondition(condition.id)">Delete</button>
-      </li>
-    </ul>
-    <p v-else>No valid conditions available.</p>
-
-    <h2>Conditions Without Symptoms (Generated from API)</h2>
-    <ul v-if="this.conditionsWithoutSymptoms.length > 0">
+    <h2 class="section-title">Valid Conditions</h2>
+    <ul v-if="conditionsWithSymptoms.length > 0" class="conditions-list">
       <li
-        v-for="condition in this.conditionsWithoutSymptoms"
+        v-for="condition in conditionsWithSymptoms"
         :key="condition.id"
+        class="condition-item"
       >
         <span>{{ condition.name }}</span>
-        <span class="hint"> - Generated from API (Needs symptoms)</span>
-        <button @click="editCondition(condition)">Add Symptoms</button>
-        <button @click="deleteCondition(condition.id)">Delete</button>
+        <span v-if="condition.isUsed" class="condition-hint">
+          - Linked to a product</span
+        >
+        <div>
+          <button @click="editCondition(condition)" class="btn-edit">
+            Update
+          </button>
+          <button @click="deleteCondition(condition.id)" class="btn-delete">
+            Delete
+          </button>
+        </div>
       </li>
     </ul>
-    <p v-else>No API conditions available.</p>
+    <p v-else class="no-results">No valid conditions available.</p>
+
+    <h2 class="section-title">
+      Conditions Without Symptoms (Generated from API)
+    </h2>
+    <ul v-if="conditionsWithoutSymptoms.length > 0" class="conditions-list">
+      <li
+        v-for="condition in conditionsWithoutSymptoms"
+        :key="condition.id"
+        class="condition-item"
+      >
+        <span>{{ condition.name }}</span>
+        <span class="condition-hint">
+          - Generated from API (Needs symptoms)</span
+        >
+        <div>
+          <button @click="editCondition(condition)" class="btn-edit">
+            Add Symptoms
+          </button>
+          <button @click="deleteCondition(condition.id)" class="btn-delete">
+            Delete
+          </button>
+        </div>
+      </li>
+    </ul>
+    <p v-else class="no-results">No API conditions available.</p>
 
     <transition name="fade">
       <div v-if="showForm" class="modal-overlay" @click.self="cancelForm">
@@ -62,8 +93,9 @@
               v-model="form.name"
               placeholder="Enter condition name"
               required
+              class="input-field"
             />
-            <label>Select Symptoms:</label>
+            <label class="label">Select Symptoms:</label>
             <multiselect
               v-model="form.selectedSymptoms"
               :options="symptomsOptions"
@@ -73,8 +105,12 @@
               label="label"
               track-by="value"
             />
-            <button type="submit">{{ isEditing ? "Update" : "Add" }}</button>
-            <button type="button" @click="cancelForm">Cancel</button>
+            <button type="submit" class="btn-primary">
+              {{ isEditing ? "Update" : "Add" }}
+            </button>
+            <button type="button" @click="cancelForm" class="btn-secondary">
+              Cancel
+            </button>
           </form>
         </div>
       </div>
@@ -263,40 +299,157 @@ export default {
 };
 </script>
 
-<style>
-.hint {
-  color: gray;
+<style scoped>
+.conditions-container {
+  font-family: "Arial", sans-serif;
+  background: #f8f8f5;
+  padding: 20px;
+  max-width: 1500px;
+  margin: auto;
+  border-radius: 10px;
+  text-align: center;
+  margin-top: 30px;
+}
+
+.title {
+  color: #3e7042;
+  font-size: 22px;
+  margin-bottom: 15px;
+}
+
+.top-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.input-search {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #aac29b;
+  border-radius: 5px;
+  font-size: 14px;
+}
+
+.fetch-container {
+  background: #eef0eb;
+  padding: 10px;
+  border-radius: 5px;
+  margin-bottom: 20px;
+}
+
+.input-number {
+  width: 50px;
+  padding: 5px;
+  margin-left: 5px;
+  border: 1px solid #aac29b;
+  border-radius: 5px;
+}
+
+.loading-message {
+  font-size: 14px;
+  color: #e67e22;
   font-style: italic;
 }
-@import "vue-multiselect/dist/vue-multiselect.min.css";
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 9999;
-}
 
-.modal-content {
-  background-color: #fff;
-  padding: 20px;
+.btn-primary,
+.btn-secondary,
+.btn-edit,
+.btn-delete,
+.btn-fetch {
+  border: none;
+  padding: 8px 12px;
   border-radius: 5px;
-  max-height: 80vh;
-  overflow-y: auto;
-  width: 400px;
+  font-size: 14px;
+  cursor: pointer;
+  margin: 3px;
 }
 
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s;
+.btn-primary {
+  background: #4a7c59;
+  color: white;
 }
-.fade-enter,
-.fade-leave-to {
-  opacity: 0;
+.btn-primary:hover {
+  background: #3e7042;
+}
+
+.btn-secondary {
+  background: #e4b363;
+  color: white;
+}
+.btn-secondary:hover {
+  background: #d9a14a;
+}
+
+.btn-edit {
+  background: #f1c40f;
+  color: white;
+}
+.btn-edit:hover {
+  background: #d9a14a;
+}
+
+.btn-delete {
+  background: #e74c3c;
+  color: white;
+}
+.btn-delete:hover {
+  background: #c0392b;
+}
+
+.btn-fetch {
+  background: #2980b9;
+  color: white;
+}
+.btn-fetch:hover {
+  background: #2471a3;
+}
+
+.condition-hint {
+  color: #413a35;
+  font-style: italic;
+}
+
+.condition-item {
+  background: white;
+  margin: 5px 0;
+  padding: 8px;
+  border-radius: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.no-results {
+  color: #e74c3c;
+  font-size: 14px;
+}
+
+@media (max-width: 500px) {
+  .conditions-container {
+    padding: 15px;
+  }
+
+  .input-search {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .top-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .condition-item {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 </style>
