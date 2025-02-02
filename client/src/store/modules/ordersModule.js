@@ -40,8 +40,16 @@ const ordersModule = {
             )}`,
           },
         });
-        if (!response.ok) throw new Error("Failed to fetch orders");
         const data = await response.json();
+
+        if (!response.ok) {
+          commit("setError", {
+            status: response.status,
+            message: data.error,
+          });
+
+          return;
+        }
         commit("setOrders", data);
       } catch (error) {
         console.error("Fetch Products Error:", error.message);
@@ -56,16 +64,16 @@ const ordersModule = {
             )}`,
           },
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const data = await response.json();
         commit("setOrder", data);
       } catch (error) {
         console.error("Fetch Order Error:", error.message);
@@ -84,16 +92,16 @@ const ordersModule = {
           body: JSON.stringify(payload),
         });
 
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const data = await response.json();
         commit("addOrder", data);
       } catch (error) {
         console.error("Error placing order:", error.message);
@@ -114,17 +122,17 @@ const ordersModule = {
             },
           }
         );
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const updatedOrder = await response.json();
-        commit("updadeOrders", updatedOrder);
+        commit("updadeOrders", data);
       } catch (error) {
         console.error("Delete Product from Order Error:", error.message);
         throw error;

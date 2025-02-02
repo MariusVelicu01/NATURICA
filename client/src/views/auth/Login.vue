@@ -49,8 +49,8 @@ export default {
       },
     };
   },
-  computed:{
-    ...mapGetters("auth", ["getError"])
+  computed: {
+    ...mapGetters("auth", ["getError"]),
   },
   methods: {
     ...mapActions("auth", ["loginAction", "extractUID"]),
@@ -64,6 +64,11 @@ export default {
 
       await this.loginAction(this.payload);
 
+      if (this.getError) {
+        alert(`Error: ${this.getError.message}`);
+        return;
+      }
+
       if (this.payload.selectedRole === "client") {
         const authDetails = {
           email: this.payload.email,
@@ -72,21 +77,20 @@ export default {
 
         const userId = await this.extractUID(authDetails);
 
+        if (this.getError) {
+          alert(`Error: ${this.getError.message}`);
+          return;
+        }
+
         if (userId !== undefined) {
           await this.loadCartFromDatabase(userId);
         } else {
           console.log("Unable to load previous cart");
         }
       }
-
-       if (this.getError) {
-          alert(`Error: ${this.getError.message}`);
-        } else {
-          alert('Successful Login!')
-          this.$router.push(`/${this.payload.selectedRole}/home`);
-        }
+      alert("Successful Login!");
+      this.$router.push(`/${this.payload.selectedRole}/home`);
     },
-
     navigateToSignup() {
       this.$router.push("/signup");
     },

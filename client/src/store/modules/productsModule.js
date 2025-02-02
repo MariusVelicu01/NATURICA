@@ -44,16 +44,16 @@ const productsModule = {
             )}`,
           },
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const data = await response.json();
         commit("setProducts", data);
       } catch (error) {
         console.error("Fetch Products Error:", error.message);
@@ -68,21 +68,24 @@ const productsModule = {
             )}`,
           },
         });
+
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const data = await response.json();
+
         commit("setProduct", data);
       } catch (error) {
-        console.error("Fetch Products Error:", error.message);
+        console.error("Fetch Product Error:", error.message);
       }
     },
+
     async addProductAction({ commit }, payload) {
       try {
         const response = await fetch("http://localhost:3000/products", {
@@ -95,17 +98,17 @@ const productsModule = {
           },
           body: JSON.stringify(payload),
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const newProduct = await response.json();
-        commit("addProduct", newProduct);
+        commit("addProduct", data);
       } catch (error) {
         console.error("Add Product Error:", error.message);
         throw error;
@@ -123,17 +126,17 @@ const productsModule = {
           },
           body: JSON.stringify(payload),
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const updatedProduct = await response.json();
-        commit("updateProduct", updatedProduct);
+        commit("updateProduct", data);
       } catch (error) {
         console.error("Update Product Error:", error.message);
         throw error;

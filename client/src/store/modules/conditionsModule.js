@@ -33,28 +33,25 @@ const conditionsModule = {
     setError(state, error) {
       state.errorState = error;
     },
-    
   },
   actions: {
     async fetchConditionsAction({ commit }) {
       try {
         const response = await fetch("http://localhost:3000/conditions", {
           headers: {
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
-          return;
-        }
-        const data = await response.json();
-        if (!Array.isArray(data)) {
-          console.error("Error: conditions API did not return an array", data);
           return;
         }
         commit("setConditions", data);
@@ -68,21 +65,23 @@ const conditionsModule = {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
           body: JSON.stringify(payload),
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const newCondition = await response.json();
-        commit("addCondition", newCondition);
+        commit("addCondition", data);
       } catch (error) {
         console.error("Add Condition Error:", error.message);
       }
@@ -93,21 +92,23 @@ const conditionsModule = {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
           body: JSON.stringify(payload),
         });
+        const data = await response.json();
+
         if (!response.ok) {
-          const errorMessage = await response.json();
           commit("setError", {
             status: response.status,
-            message: errorMessage.error,
+            message: data.error,
           });
 
           return;
         }
-        const updatedCondition = await response.json();
-        commit("updateCondition", updatedCondition);
+        commit("updateCondition", data);
       } catch (error) {
         console.error("Update Condition Error:", error.message);
       }
@@ -117,7 +118,9 @@ const conditionsModule = {
         const response = await fetch(`http://localhost:3000/conditions/${id}`, {
           method: "DELETE",
           headers: {
-            Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+            Authorization: `Bearer ${decryptData(
+              localStorage.getItem("token")
+            )}`,
           },
         });
         if (!response.ok) {
@@ -156,7 +159,10 @@ const conditionsModule = {
             conditions.push(result[3][0][0]);
           }
         } catch (error) {
-          console.error(`Failed to fetch condition at offset ${offset}:`, error);
+          console.error(
+            `Failed to fetch condition at offset ${offset}:`,
+            error
+          );
         }
       }
 
@@ -172,28 +178,28 @@ const conditionsModule = {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${decryptData(localStorage.getItem("token"))}`,
+              Authorization: `Bearer ${decryptData(
+                localStorage.getItem("token")
+              )}`,
             },
             body: JSON.stringify({ conditions }),
           }
         );
 
-        const backendResult = await backendResponse.json();
+        const data = await backendResponse.json();
+
         if (!backendResponse.ok) {
-          {
-            const errorMessage = await backendResult.json();
-            commit("setError", {
-              status: backendResult.status,
-              message: errorMessage.error,
-            });
-  
-            return;
-          }
+          commit("setError", {
+            status: backendResponse.status,
+            message: data.error,
+          });
+
+          return;
         }
 
         commit("setConditions", [...conditions]);
 
-        return backendResult;
+        return backendResponse;
       } catch (error) {
         console.error("Error in fetchConditionsFromAPIAction:", error);
         throw error;
