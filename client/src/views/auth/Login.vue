@@ -34,7 +34,9 @@
         </label>
       </div>
 
-      <button type="submit" class="btn-login">Login</button>
+      <button type="submit" class="btn-login">
+        Login
+      </button>
     </form>
 
     <div class="navigation-buttons">

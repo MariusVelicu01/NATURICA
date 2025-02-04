@@ -204,9 +204,8 @@ export default {
 
     filterBySymptoms() {
       return this.allProducts.filter((product) => {
-        const productSymptoms = this.symptomsTreated(product.conditionsTreated);
         return this.selectedSymptoms.some((selectedSymptom) =>
-          productSymptoms.some(
+          product.symptomsTreated.some(
             (symptom) => symptom.id === selectedSymptom.value
           )
         );

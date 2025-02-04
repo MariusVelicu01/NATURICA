@@ -130,7 +130,7 @@ router.beforeEach(async (to, from, next) => {
 
   const publicRoutes = ["/", "/signup", "/forgot-password"];
 
-  if (to.meta.requiresAuth && !isAuth) {
+  if (!isAuth) {
     if (!publicRoutes.includes(to.path)) {
       return next("/");
     }

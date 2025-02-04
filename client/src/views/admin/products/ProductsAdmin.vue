@@ -256,8 +256,12 @@ export default {
 
       if (this.showOutOfStockOnly) {
         products = products.filter((product) => product.stock === 0);
-        productsBySymptoms = productsBySymptoms.filter((product) => product.stock === 0);
-        productsByConditions = products.filter((product) => product.stock === 0);
+        productsBySymptoms = productsBySymptoms.filter(
+          (product) => product.stock === 0
+        );
+        productsByConditions = products.filter(
+          (product) => product.stock === 0
+        );
       }
 
       if (
@@ -376,6 +380,8 @@ export default {
           imageUrl = url;
         }
 
+        const currentSymptoms = this.symptomsTreated(this.selectedConditions);
+
         const payload = {
           name: this.form.name,
           productDetails: this.form.productDetails,
@@ -385,6 +391,10 @@ export default {
           conditionsTreated: this.selectedConditions.map((condition) => ({
             id: condition.value,
             name: condition.label,
+          })),
+          symptomsTreated: currentSymptoms.map((symptom) => ({
+            id: symptom.id,
+            name: symptom.name,
           })),
         };
 
@@ -452,9 +462,8 @@ export default {
 
     filterBySymptoms() {
       return this.allProducts.filter((product) => {
-        const productSymptoms = this.symptomsTreated(product.conditionsTreated);
         return this.selectedSymptomsFilter.some((selectedSymptom) =>
-          productSymptoms.some(
+          product.symptomsTreated.some(
             (symptom) => symptom.id === selectedSymptom.value
           )
         );
@@ -612,6 +621,12 @@ export default {
 
 .product-image {
   max-width: 200px;
+  margin-top: 5px;
+  border-radius: 5px;
+}
+
+.product-image-preview {
+  max-width: 100px;
   margin-top: 5px;
   border-radius: 5px;
 }

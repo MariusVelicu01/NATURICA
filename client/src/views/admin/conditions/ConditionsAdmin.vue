@@ -89,12 +89,15 @@
         <div class="modal-content">
           <h2>{{ isEditing ? "Update Condition" : "Add Condition" }}</h2>
           <form @submit.prevent="submitForm">
-            <input
-              v-model="form.name"
-              placeholder="Enter condition name"
-              required
-              class="input-field"
-            />
+            <div id="condition-name-modal">
+              <label class="label">Condition Name: </label>
+              <input
+                v-model="form.name"
+                placeholder="Enter condition name"
+                required
+                class="input-field"
+              />
+            </div>
             <label class="label">Select Symptoms:</label>
             <multiselect
               v-model="form.selectedSymptoms"
@@ -424,6 +427,43 @@ export default {
 .no-results {
   color: #e74c3c;
   font-size: 14px;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 5px;
+  height: 60vh;
+  overflow-y: auto;
+  width: 500px;
+  text-align: center;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter,
+.fade-leave-to {
+  opacity: 0;
+}
+
+#condition-name-modal{
+  margin-bottom: 40px;
 }
 
 @media (max-width: 500px) {

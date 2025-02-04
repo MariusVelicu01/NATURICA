@@ -26,7 +26,7 @@
       <div class="symptoms-section">
         <h3>Symptoms Treated:</h3>
         <ul>
-          <li v-for="symptom in currentSymptomsTreated" :key="symptom.id">
+          <li v-for="symptom in product.symptomsTreated" :key="symptom.id">
             {{ symptom.name }}
           </li>
         </ul>
@@ -72,11 +72,6 @@ export default {
   },
   computed: {
     ...mapGetters("products", ["productToView"]),
-    ...mapGetters("conditions", ["symptomsTreated"]),
-
-    currentSymptomsTreated() {
-      return this.symptomsTreated(this.product.conditionsTreated);
-    },
   },
   methods: {
     ...mapActions("products", ["fetchProductAction"]),

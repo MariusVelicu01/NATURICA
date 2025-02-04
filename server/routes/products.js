@@ -44,7 +44,7 @@ router.get('/:id', checkRole('client'), async (req, res) => {
 
 router.post('/', checkRole('admin'), validateProductName, async (req, res) => {
   try {
-    const { name, productDetails, conditionsTreated, stock, price, imgSrc } = req.body;
+    const { name, productDetails, conditionsTreated, symptomsTreated, stock, price, imgSrc } = req.body;
     const productStatistics = 0;
 
     if (!name || !productDetails || !conditionsTreated || !Array.isArray(conditionsTreated) || !stock || !price || !imgSrc) {
@@ -59,6 +59,7 @@ router.post('/', checkRole('admin'), validateProductName, async (req, res) => {
       name,
       productDetails,
       conditionsTreated,
+      symptomsTreated,
       stock,
       price,
       imgSrc,
@@ -75,7 +76,7 @@ router.post('/', checkRole('admin'), validateProductName, async (req, res) => {
 router.put('/:id', checkRole('admin'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, productDetails, conditionsTreated, stock, price, imgSrc } = req.body;
+    const { name, productDetails, conditionsTreated, symptomsTreated, stock, price, imgSrc } = req.body;
 
     if (!name || !productDetails || !conditionsTreated || !Array.isArray(conditionsTreated) || !stock || !price || !imgSrc) {
       return res.status(400).json({ error: 'All fields are required, including conditions treated.' });
@@ -97,6 +98,7 @@ router.put('/:id', checkRole('admin'), async (req, res) => {
         name,
         productDetails,
         conditionsTreated,
+        symptomsTreated,
         stock,
         price,
         imgSrc,
